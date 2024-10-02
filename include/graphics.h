@@ -89,17 +89,18 @@ GLuint compile_shader(GLenum type, const char* source);
 void buffer_create(buffer *input, GLenum type, void *data, size_t length);
 void buffer_bind(buffer *input);
 void buffer_unbind(buffer *input);
-void update_buffer(buffer *input);
-
+void buffer_update(buffer *input);
+void buffer_delete(buffer *input);
 
 //vertex arrays
 void vertex_array_create(vertex_array *input);
 void vertex_array_bind(vertex_array *input);
 void vertex_array_unbind(vertex_array *input);
 vertex_attrib_pointer vertex_array_attribute_create(vertex_array *input, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLvoid *pointer);
-
+void vertex_array_delete(vertex_array *input);
 
 //renderer functions
 void renderable_object_create(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader);
-void draw_renderable_object(renderable_object *input);
+void renderable_object_draw(renderable_object *input);
+void renderable_object_delete(renderable_object *input);
 #endif

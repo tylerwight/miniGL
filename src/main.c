@@ -96,73 +96,32 @@ int main(){
     buffer quad_VBO, quad_IBO;
     vertex_array quad_VAO;
     renderable_object square;
-printf("made it here");
+
     vertex_array_create(&quad_VAO);
     buffer_create(&quad_VBO, GL_ARRAY_BUFFER, vertices, sizeof(float)*12);
     buffer_create(&quad_IBO, GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(GLuint)*6);
     
     quad_VAO.attributes[0] = vertex_array_attribute_create(&quad_VAO, 0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    quad_VAO.attribute_count = 1;
     renderable_object_create(&square, &quad_VAO, &quad_VBO, &quad_IBO, &main_shader);
-
-
-    // vertex_array_bind(&quad_VAO);
-    // buffer_bind(&quad_VBO);
-    // buffer_bind(&quad_IBO);
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);
-    // vertex_array_unbind(&quad_VAO);
-    // buffer_unbind(&quad_VBO);
-    // buffer_unbind(&quad_IBO);
-
-
-    // for (int i = 0; i < 12; i++){
-    //     printf("float%d: %f\n", i, ((float*)quad_VBO.data)[i]);
-    // }
-    // for (int i = 0; i < 6; i++){
-    //     printf("int%d: %d\n", i, ((GLuint*)quad_IBO.data)[i]);
-    // }
-
-
-    
-    // unsigned int VBO;
-    // unsigned int IBO;
-    // unsigned int VAO;
-    
-    // glGenVertexArrays(1, &VAO);
-    // glGenBuffers(1, &VBO);
-    // glGenBuffers(1, &IBO);
-    
-    // glBindVertexArray(VAO);
-    
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 18, vertices, GL_DYNAMIC_DRAW);
-
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 6, indices, GL_DYNAMIC_DRAW);
-
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);
-    
-    // glBindVertexArray(0);
-    // glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     
     while (!glfwWindowShouldClose(window)){ // game loop
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        //vertex_array_bind(&quad_VAO);
-        //glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
-        draw_renderable_object(&square);
+
+        renderable_object_draw(&square);
 
 
         glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
 
     // glDeleteVertexArrays(OBJECT_COUNT, game.VAO);
     // glDeleteBuffers(OBJECT_COUNT, game.VBO);
     // glDeleteProgram(game.shader_program_quads);
+    renderable_object_delete(&square);
 
     glfwTerminate();
     return 0;

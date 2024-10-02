@@ -67,6 +67,11 @@ const char* load_shader_source(const char* file_path) {
     return buffer;
 }
 
+shader_delete(shader *input){
+    glDeleteProgram(input->program);
+}
+
+
 void buffer_create(buffer *input, GLenum type, void *data, size_t length){
     glGenBuffers(1, &(input->id));
 
@@ -76,10 +81,10 @@ void buffer_create(buffer *input, GLenum type, void *data, size_t length){
     input->type = type;
     input->length = length;
 
-    update_buffer(input);
+    buffer_update(input);
 }
 
-void update_buffer(buffer *input){
+void buffer_update(buffer *input){
     buffer_bind(input);
     glBufferData(input->type, input->length, input->data, GL_DYNAMIC_DRAW);
     buffer_unbind(input);
@@ -92,8 +97,15 @@ void buffer_unbind(buffer *input){
     glBindBuffer(input->type, 0);
 }
 
+void buffer_delete(buffer *input){
+    glDeleteBuffers(1, &(input->id));
+    free(input->data);
+}
+
+
 void vertex_array_create(vertex_array *input){
     glGenVertexArrays(1, &(input->id));
+    input->attribute_count = 0;
 }
 
 void vertex_array_bind(vertex_array *input){
@@ -101,6 +113,10 @@ void vertex_array_bind(vertex_array *input){
 }
 void vertex_array_unbind(vertex_array *input){
     glBindVertexArray(0);
+}
+
+void vertex_array_delete(vertex_array *input){
+    glDeleteVertexArrays(1, &(input->id));
 }
 
 vertex_attrib_pointer vertex_array_attribute_create(vertex_array *input, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLvoid *pointer){
@@ -125,21 +141,30 @@ void renderable_object_create(renderable_object *input, vertex_array *vao, buffe
     vertex_array_bind(vao);
     buffer_bind(vbo);
     buffer_bind(ibo);
-    glVertexAttribPointer(vao->attributes[0].index, vao->attributes[0].size, vao->attributes[0].type, vao->attributes[0].normalized, vao->attributes[0].stride, vao->attributes[0].pointer);
-    glEnableVertexAttribArray(0);
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);
+    //glVertexAttribPointer(vao->attributes[0].index, vao->attributes[0].size, vao->attributes[0].type, vao->attributes[0].normalized, vao->attributes[0].stride, vao->attributes[0].pointer);
+    //glEnableVertexAttribArray(0);
+
+    for (int i = 0; i < vao->attribute_count; i++){
+        glVertexAttribPointer(i, vao->attributes[i].size, vao->attributes[0].type, vao->attributes[0].normalized, vao->attributes[0].stride, vao->attributes[0].pointer);
+        glEnableVertexAttribArray(i);
+    }
+
     vertex_array_unbind(vao);
     buffer_unbind(vbo);
     buffer_unbind(ibo);
     
-    // for (int i = 0; i < vao->attribute_count; i++){
-    //     glVertexAttribPointer(i, )
-    // }
+
 }
 
 
-void draw_renderable_object(renderable_object *input){
+void renderable_object_draw(renderable_object *input){
     vertex_array_bind(&(input->vao));
     glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+}
+
+void renderable_object_delete(renderable_object *input){
+    vertex_array_delete(&(input->vao));
+    buffer_delete(&(input->ibo));
+    buffer_delete(&(input->vbo));
+    shader_delete(input->shader);
 }
