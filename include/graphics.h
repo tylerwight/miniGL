@@ -99,14 +99,14 @@ void buffer_delete(buffer *input);
 void vertex_array_create(vertex_array *input);
 void vertex_array_bind(vertex_array *input);
 void vertex_array_unbind(vertex_array *input);
-vertex_attrib_pointer vertex_array_attribute_create(vertex_array *input, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLvoid *pointer);
+vertex_attrib_pointer vertex_array_attribute_create(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLvoid *pointer);
 void vertex_array_delete(vertex_array *input);
 
 //renderer functions
 void renderable_object_create(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader);
 void renderable_object_draw(renderable_object *input);
 void renderable_object_delete(renderable_object *input);
-
+void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader);
 
 
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );

@@ -126,7 +126,7 @@ void vertex_array_delete(vertex_array *input){
     glDeleteVertexArrays(1, &(input->id));
 }
 
-vertex_attrib_pointer vertex_array_attribute_create(vertex_array *input, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLvoid *pointer){
+vertex_attrib_pointer vertex_array_attribute_create(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLvoid *pointer){
     vertex_attrib_pointer attribute;
     attribute.index = index;
     attribute.size = size;
@@ -149,7 +149,7 @@ void renderable_object_create(renderable_object *input, vertex_array *vao, buffe
     buffer_bind(vbo);
     buffer_bind(ibo);
     for (int i = 0; i < vao->attribute_count; i++){
-        glVertexAttribPointer(i, vao->attributes[i].size, vao->attributes[0].type, vao->attributes[0].normalized, vao->attributes[0].stride, vao->attributes[0].pointer);
+        glVertexAttribPointer(i, vao->attributes[i].size, vao->attributes[i].type, vao->attributes[i].normalized, vao->attributes[i].stride, vao->attributes[i].pointer);
         glEnableVertexAttribArray(i);
     }
 
@@ -157,6 +157,29 @@ void renderable_object_create(renderable_object *input, vertex_array *vao, buffe
     buffer_unbind(vbo);
     buffer_unbind(ibo);
     
+
+}
+
+void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader){
+    input->shader = shader;
+    vertex_array VAO;
+    buffer VBO, IBO;
+    vertex_array_create(&VAO);
+    buffer_create(&VBO, GL_ARRAY_BUFFER, vertices, sizeof(float) * vertices_count);
+    buffer_create(&IBO, GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(GLuint) * indices_count);
+
+    vertex_array_bind(&VAO);
+    buffer_bind(&VBO);
+    buffer_bind(&IBO);
+
+    for (int i = 0; i < attribute_count; i++){
+        glVertexAttribPointer(i, attributes[i].size, attributes[i].type, attributes[i].normalized, attributes[i].stride, attributes[i].pointer);
+        glEnableVertexAttribArray(i);
+    }
+
+    vertex_array_unbind(&VAO);
+    buffer_unbind(&VBO);
+    buffer_unbind(&IBO);
 
 }
 
