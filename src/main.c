@@ -1,0 +1,155 @@
+#define GLEW_STATIC
+
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alut.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include "graphics.h"
+//#include "game.h"
+
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    // if (action == GLFW_PRESS || action == GLFW_RELEASE) {
+    //   if (action == GLFW_PRESS) {
+    //       //move = 1;
+    //   } else {
+    //       //move = 0;
+    //   }
+
+    //     switch (key) {
+    //         case GLFW_KEY_UP:
+    //             if (game->key_pressed != DOWN){ game->key_pressed = UP;}
+    //             //key_pressed = UP;
+    //             break;
+    //         case GLFW_KEY_DOWN:
+    //         if (game->key_pressed != UP){ game->key_pressed = DOWN;}
+    //             //key_pressed = DOWN;
+    //             break;
+    //         case GLFW_KEY_LEFT:
+    //             if (game->key_pressed != RIGHT){ game->key_pressed = LEFT;}
+    //             //key_pressed = LEFT;
+    //             break;
+    //         case GLFW_KEY_RIGHT:
+    //             if (game->key_pressed != LEFT){ game->key_pressed = RIGHT;}
+    //             //key_pressed = RIGHT;
+    //             break;
+    //         case GLFW_KEY_ESCAPE:
+    //             exit(0);
+    //             break;
+    //     }
+    //}
+}
+
+
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y){
+    GLFWwindow* window;
+    if (!glfwInit()){exit(-1);}
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        window = glfwCreateWindow(resolution_x, resolution_y, "Window", NULL, NULL);
+        if (!window){
+            glfwTerminate();
+            exit(-1);
+        }
+
+
+        glfwMakeContextCurrent(window);
+
+        if (glewInit() != GLEW_OK)
+        {
+            printf("Failed to initialize GLEW\n");
+            exit(-1);
+        }
+        glfwSetKeyCallback(window, key_callback);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        return window;
+}
+
+
+
+int main(){
+    GLFWwindow* window;
+    window = setup_opengl(1024,768);
+
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f, //bottom left
+        0.5f, -0.5f, 0.0f, // bottom right
+        0.5f, 0.5f, 0.0f, // top right
+        -0.5f, 0.5f, 0.0f, // top left
+    };
+
+    GLuint indices[] = {
+        0, 2, 1,
+        3, 2, 0
+    };
+
+    shader main_shader;
+
+    main_shader.vertex_source = load_shader_source("shaders/vertex_shader.glsl");
+    main_shader.fragment_source = load_shader_source("shaders/fragment_shader.glsl");
+    printf("VERTEX:\n %s", main_shader.vertex_source);
+    create_shader_program(&main_shader);
+    
+    printf("FRAGMENT: \n %s", main_shader.fragment_source);
+    // main_shader.fragment_source = load_shader_source("shaders/fragment_shader.glsl");
+    // create_shader_program(&main_shader);
+    buffer triangle_VBO, triangle_VAO, triangle_IBO;
+    triangle_VBO.type = GL_ARRAY_BUFFER;
+    
+    unsigned int VBO;
+    unsigned int IBO;
+    unsigned int VAO;
+    glUseProgram(main_shader.program);
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &IBO);
+    
+    glBindVertexArray(VAO);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 18, vertices, GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 6, indices, GL_DYNAMIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+    while (!glfwWindowShouldClose(window)){ // game loop
+        glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBindVertexArray(VAO);
+        //glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+
+
+        glfwSwapBuffers(window);
+    }
+
+
+    // glDeleteVertexArrays(OBJECT_COUNT, game.VAO);
+    // glDeleteBuffers(OBJECT_COUNT, game.VBO);
+    // glDeleteProgram(game.shader_program_quads);
+
+    glfwTerminate();
+    return 0;
+
+
+}
+
+
