@@ -13,35 +13,27 @@
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
-    // if (action == GLFW_PRESS || action == GLFW_RELEASE) {
-    //   if (action == GLFW_PRESS) {
-    //       //move = 1;
-    //   } else {
-    //       //move = 0;
-    //   }
+    if (action == GLFW_PRESS || action == GLFW_RELEASE) {
+      if (action == GLFW_PRESS) {
+          //move = 1;
+      } else {
+          //move = 0;
+      }
 
-    //     switch (key) {
-    //         case GLFW_KEY_UP:
-    //             if (game->key_pressed != DOWN){ game->key_pressed = UP;}
-    //             //key_pressed = UP;
-    //             break;
-    //         case GLFW_KEY_DOWN:
-    //         if (game->key_pressed != UP){ game->key_pressed = DOWN;}
-    //             //key_pressed = DOWN;
-    //             break;
-    //         case GLFW_KEY_LEFT:
-    //             if (game->key_pressed != RIGHT){ game->key_pressed = LEFT;}
-    //             //key_pressed = LEFT;
-    //             break;
-    //         case GLFW_KEY_RIGHT:
-    //             if (game->key_pressed != LEFT){ game->key_pressed = RIGHT;}
-    //             //key_pressed = RIGHT;
-    //             break;
-    //         case GLFW_KEY_ESCAPE:
-    //             exit(0);
-    //             break;
-    //     }
-    //}
+        switch (key) {
+            case GLFW_KEY_UP:
+                break;
+            case GLFW_KEY_DOWN:
+                break;
+            case GLFW_KEY_LEFT:
+                break;
+            case GLFW_KEY_RIGHT:
+                break;
+            case GLFW_KEY_ESCAPE:
+                exit(0);
+                break;
+        }
+    }
 }
 
 
@@ -93,49 +85,75 @@ int main(){
         3, 2, 0
     };
 
+    //setup shaders
     shader main_shader;
-
     main_shader.vertex_source = load_shader_source("shaders/vertex_shader.glsl");
     main_shader.fragment_source = load_shader_source("shaders/fragment_shader.glsl");
-    printf("VERTEX:\n %s", main_shader.vertex_source);
     create_shader_program(&main_shader);
-    
-    printf("FRAGMENT: \n %s", main_shader.fragment_source);
-    // main_shader.fragment_source = load_shader_source("shaders/fragment_shader.glsl");
-    // create_shader_program(&main_shader);
-    buffer triangle_VBO, triangle_VAO, triangle_IBO;
-    triangle_VBO.type = GL_ARRAY_BUFFER;
-    
-    unsigned int VBO;
-    unsigned int IBO;
-    unsigned int VAO;
     glUseProgram(main_shader.program);
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &IBO);
+
+
+    buffer quad_VBO, quad_IBO;
+    vertex_array quad_VAO;
+    renderable_object square;
+printf("made it here");
+    vertex_array_create(&quad_VAO);
+    buffer_create(&quad_VBO, GL_ARRAY_BUFFER, vertices, sizeof(float)*12);
+    buffer_create(&quad_IBO, GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(GLuint)*6);
     
-    glBindVertexArray(VAO);
+    quad_VAO.attributes[0] = vertex_array_attribute_create(&quad_VAO, 0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    renderable_object_create(&square, &quad_VAO, &quad_VBO, &quad_IBO, &main_shader);
+
+
+    // vertex_array_bind(&quad_VAO);
+    // buffer_bind(&quad_VBO);
+    // buffer_bind(&quad_IBO);
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // glEnableVertexAttribArray(0);
+    // vertex_array_unbind(&quad_VAO);
+    // buffer_unbind(&quad_VBO);
+    // buffer_unbind(&quad_IBO);
+
+
+    // for (int i = 0; i < 12; i++){
+    //     printf("float%d: %f\n", i, ((float*)quad_VBO.data)[i]);
+    // }
+    // for (int i = 0; i < 6; i++){
+    //     printf("int%d: %d\n", i, ((GLuint*)quad_IBO.data)[i]);
+    // }
+
+
     
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 18, vertices, GL_DYNAMIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 6, indices, GL_DYNAMIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    // unsigned int VBO;
+    // unsigned int IBO;
+    // unsigned int VAO;
     
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    // glGenVertexArrays(1, &VAO);
+    // glGenBuffers(1, &VBO);
+    // glGenBuffers(1, &IBO);
+    
+    // glBindVertexArray(VAO);
+    
+    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 18, vertices, GL_DYNAMIC_DRAW);
 
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 6, indices, GL_DYNAMIC_DRAW);
 
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // glEnableVertexAttribArray(0);
+    
+    // glBindVertexArray(0);
+    // glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    
     while (!glfwWindowShouldClose(window)){ // game loop
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        glBindVertexArray(VAO);
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+        //vertex_array_bind(&quad_VAO);
+        //glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+        draw_renderable_object(&square);
 
 
         glfwSwapBuffers(window);

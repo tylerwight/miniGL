@@ -67,10 +67,79 @@ const char* load_shader_source(const char* file_path) {
     return buffer;
 }
 
-void create_buffer(buffer *input, GLenum type, void *data){
-    if (type == GL_ARRAY_BUFFER){
-        glGenBuffers(1, &(input->id));
-        
-    }
+void buffer_create(buffer *input, GLenum type, void *data, size_t length){
+    glGenBuffers(1, &(input->id));
+
+    input->data = malloc(length);
+    memcpy(input->data, data, length);
+
+    input->type = type;
+    input->length = length;
+
+    update_buffer(input);
+}
+
+void update_buffer(buffer *input){
+    buffer_bind(input);
+    glBufferData(input->type, input->length, input->data, GL_DYNAMIC_DRAW);
+    buffer_unbind(input);
+}
+
+void buffer_bind(buffer *input){
+    glBindBuffer(input->type, input->id);
+}
+void buffer_unbind(buffer *input){
+    glBindBuffer(input->type, 0);
+}
+
+void vertex_array_create(vertex_array *input){
+    glGenVertexArrays(1, &(input->id));
+}
+
+void vertex_array_bind(vertex_array *input){
+    glBindVertexArray(input->id);
+}
+void vertex_array_unbind(vertex_array *input){
+    glBindVertexArray(0);
+}
+
+vertex_attrib_pointer vertex_array_attribute_create(vertex_array *input, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLvoid *pointer){
+    vertex_attrib_pointer attribute;
+    attribute.index = index;
+    attribute.size = size;
+    attribute.type = type;
+    attribute.normalized = normalized; 
+    attribute.stride = stride;
+    attribute.pointer = pointer;
+
+    return attribute;
+
+}
+
+void renderable_object_create(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader){
+    input->vao = *vao;
+    input->vbo = *vbo;
+    input->ibo = *ibo;
+    //input->shader = shader;
+    //input->texture = texture;
+    vertex_array_bind(vao);
+    buffer_bind(vbo);
+    buffer_bind(ibo);
+    glVertexAttribPointer(vao->attributes[0].index, vao->attributes[0].size, vao->attributes[0].type, vao->attributes[0].normalized, vao->attributes[0].stride, vao->attributes[0].pointer);
+    glEnableVertexAttribArray(0);
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // glEnableVertexAttribArray(0);
+    vertex_array_unbind(vao);
+    buffer_unbind(vbo);
+    buffer_unbind(ibo);
     
+    // for (int i = 0; i < vao->attribute_count; i++){
+    //     glVertexAttribPointer(i, )
+    // }
+}
+
+
+void draw_renderable_object(renderable_object *input){
+    vertex_array_bind(&(input->vao));
+    glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
 }
