@@ -1,6 +1,8 @@
 #include "graphics.h"
 
-
+//////////////////////////
+//////SHADERS////////////
+/////////////////////////
 GLuint shader_compile(GLenum type, const char* source){
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, NULL);
@@ -79,6 +81,9 @@ shader_delete(shader *input){
 }
 
 
+//////////////////////////
+//////BUFFERS////////////
+/////////////////////////
 void buffer_create(buffer *input, GLenum type, void *data, size_t length){
     glGenBuffers(1, &(input->id));
 
@@ -110,6 +115,13 @@ void buffer_delete(buffer *input){
 }
 
 
+
+
+//////////////////////////
+//////VERTEX ARRAYS////////////
+/////////////////////////
+
+
 void vertex_array_create(vertex_array *input){
     glGenVertexArrays(1, &(input->id));
     input->attribute_count = 0;
@@ -139,6 +151,10 @@ vertex_attrib_pointer vertex_array_attribute_create(GLuint index, GLint size, GL
 
 }
 
+
+//////////////////////////
+//////RENDERABLE OBJECTS////////////
+/////////////////////////
 void renderable_object_create(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader){
     input->vao = *vao;
     input->vbo = *vbo;
@@ -197,6 +213,11 @@ void renderable_object_delete(renderable_object *input){
     shader_delete(input->shader);
 }
 
+
+
+//////////////////////////
+//////GENERAL////////////
+/////////////////////////
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) ){
     GLFWwindow* window;
     if (!glfwInit()){exit(-1);}

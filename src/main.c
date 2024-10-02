@@ -54,7 +54,6 @@ int main(){
 
         renderable_object_draw(&square);
 
-
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
