@@ -1,7 +1,7 @@
 #include "graphics.h"
 
 
-GLuint compile_shader(GLenum type, const char* source){
+GLuint shader_compile(GLenum type, const char* source){
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, NULL);
     glCompileShader(shader);
@@ -17,9 +17,9 @@ GLuint compile_shader(GLenum type, const char* source){
     return shader;
 }
 
-void create_shader_program(shader *shader){
-    GLuint vertex_shader = compile_shader(GL_VERTEX_SHADER, shader->vertex_source);
-    GLuint fragment_shader = compile_shader(GL_FRAGMENT_SHADER, shader->fragment_source);
+void shader_create_program(shader *shader){
+    GLuint vertex_shader = shader_compile(GL_VERTEX_SHADER, shader->vertex_source);
+    GLuint fragment_shader = shader_compile(GL_FRAGMENT_SHADER, shader->fragment_source);
 
     GLuint shader_program = glCreateProgram();
     glAttachShader(shader_program, vertex_shader);
@@ -42,7 +42,7 @@ void create_shader_program(shader *shader){
     return;
 }
 
-const char* load_shader_source(const char* file_path) {
+const char* shader_load_source(const char* file_path) {
     FILE* file = fopen(file_path, "r");
     if (!file) {
         fprintf(stderr, "Could not open file: %s\n", file_path);
@@ -65,6 +65,13 @@ const char* load_shader_source(const char* file_path) {
 
     fclose(file);
     return buffer;
+}
+
+void shader_create(shader *input, const char *vertex_path, const char *fragment_path){
+    input->vertex_source = shader_load_source(vertex_path);
+    input->fragment_source = shader_load_source(fragment_path);
+    shader_create_program(input);
+
 }
 
 shader_delete(shader *input){
@@ -136,14 +143,11 @@ void renderable_object_create(renderable_object *input, vertex_array *vao, buffe
     input->vao = *vao;
     input->vbo = *vbo;
     input->ibo = *ibo;
-    //input->shader = shader;
+    input->shader = shader;
     //input->texture = texture;
     vertex_array_bind(vao);
     buffer_bind(vbo);
     buffer_bind(ibo);
-    //glVertexAttribPointer(vao->attributes[0].index, vao->attributes[0].size, vao->attributes[0].type, vao->attributes[0].normalized, vao->attributes[0].stride, vao->attributes[0].pointer);
-    //glEnableVertexAttribArray(0);
-
     for (int i = 0; i < vao->attribute_count; i++){
         glVertexAttribPointer(i, vao->attributes[i].size, vao->attributes[0].type, vao->attributes[0].normalized, vao->attributes[0].stride, vao->attributes[0].pointer);
         glEnableVertexAttribArray(i);
@@ -159,6 +163,7 @@ void renderable_object_create(renderable_object *input, vertex_array *vao, buffe
 
 void renderable_object_draw(renderable_object *input){
     vertex_array_bind(&(input->vao));
+    glUseProgram(input->shader->program);
     glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
 }
 
@@ -167,4 +172,34 @@ void renderable_object_delete(renderable_object *input){
     buffer_delete(&(input->ibo));
     buffer_delete(&(input->vbo));
     shader_delete(input->shader);
+}
+
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) ){
+    GLFWwindow* window;
+    if (!glfwInit()){exit(-1);}
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        window = glfwCreateWindow(resolution_x, resolution_y, "Snek", NULL, NULL);
+        if (!window){
+            glfwTerminate();
+            exit(-1);
+        }
+
+
+        glfwMakeContextCurrent(window);
+
+        if (glewInit() != GLEW_OK)
+        {
+            printf("Failed to initialize GLEW\n");
+            exit(-1);
+        }
+        glfwSetKeyCallback(window, key_callback);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        return window;
 }

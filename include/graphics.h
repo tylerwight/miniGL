@@ -81,9 +81,12 @@ typedef struct renderer {
 
 
 //shader functions
-const char* load_shader_source(const char* file_path);
-void create_shader_program(shader *shader);
-GLuint compile_shader(GLenum type, const char* source);
+const char* shader_load_source(const char* file_path);
+void shader_create_program(shader *shader);
+GLuint shader_compile(GLenum type, const char* source);
+void shader_create(shader *input, const char *vertex_path, const char *fragment_path);
+
+
 
 //buffers
 void buffer_create(buffer *input, GLenum type, void *data, size_t length);
@@ -103,4 +106,8 @@ void vertex_array_delete(vertex_array *input);
 void renderable_object_create(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader);
 void renderable_object_draw(renderable_object *input);
 void renderable_object_delete(renderable_object *input);
+
+
+
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
 #endif
