@@ -1,4 +1,4 @@
-#C opengl_renderer
+# C opengl_renderer
 
 A basic abstraction of openGL in C using:
 - GLFW
