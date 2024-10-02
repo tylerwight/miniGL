@@ -41,9 +41,10 @@ int main(){
     //setup shaders
     shader main_shader;
     shader_create(&main_shader, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
-    renderable_object square;
+    
     
     // create the object
+    renderable_object square;
     renderable_object_create2(&square, vertices, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader);
 
 
