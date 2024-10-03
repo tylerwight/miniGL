@@ -236,8 +236,8 @@ void renderable_object_create2(renderable_object *input, float vertices[], int v
 
 void renderable_object_draw(renderable_object *input){
     vertex_array_bind(&(input->vao));
-    //buffer_bind(&(input->vbo));
-    //buffer_bind(&(input->ibo));
+    buffer_bind(&(input->vbo));
+    buffer_bind(&(input->ibo));
 
     GLCall(glUseProgram(input->shader->program));
     //printf("shaderid = %d\n", input->shader->program);
