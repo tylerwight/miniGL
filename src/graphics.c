@@ -169,7 +169,6 @@ void renderable_object_create(renderable_object *input, vertex_array *vao, buffe
     input->vbo = *vbo;
     input->ibo = *ibo;
     input->shader = shader;
-    //input->texture = texture;
     vertex_array_bind(vao);
     buffer_bind(vbo);
     buffer_bind(ibo);
@@ -185,7 +184,6 @@ void renderable_object_create(renderable_object *input, vertex_array *vao, buffe
 
 }
 
-//void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture){
 void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader){
     input->shader = shader;
     vertex_array VAO;
@@ -209,9 +207,7 @@ void renderable_object_create2(renderable_object *input, float vertices[], int v
 
 }
 
-// void renderable_object_link_texture(renderable_object *input, texture *texture){
-//     input->texture = texture;
-// }
+
 
 
 void renderable_object_draw(renderable_object *input){
@@ -259,8 +255,8 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
             exit(-1);
         }
         glfwSetKeyCallback(window, key_callback);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         const unsigned char *glversion = glGetString(GL_VERSION);
@@ -284,29 +280,3 @@ bool GLLogCall(const char* function, const char* file, int line){
     }
     return true;
 }
-
-
-
-//TEXTURES
-
-// void texture_load(texture *input, const char *path){
-//     glGenTextures(1, &(input->id));
-//     glBindTexture(GL_TEXTURE_2D, input->id);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//     int nrChannels;
-//     unsigned char *data = stbi_load("assets/snek_head.png", &(input->width), &(input->height), &nrChannels, 0);
-//     if (data){
-//         GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-//         //glTexImage2D(GL_TEXTURE_2D, 0, format, input->width, input->height, 0, format, GL_UNSIGNED_BYTE, data);
-//         glGenerateMipmap(GL_TEXTURE_2D);
-//         printf("Texture loaded successfully: %d x %d, channels: %d\n", input->width, input->height, nrChannels);
-
-//     }else{
-//         printf("Failed to load texture\n");
-//     }
-//     stbi_image_free(data);
-//     glBindTexture(GL_TEXTURE_2D, 0);
-// }
