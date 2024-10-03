@@ -101,7 +101,7 @@ shader_delete(shader *input){
 //////BUFFERS////////////
 /////////////////////////
 void buffer_create(buffer *input, GLenum type, void *data, size_t length){
-    glGenBuffers(1, &(input->id));
+    GLCall(glGenBuffers(1, &(input->id)));
 
     input->data = malloc(length);
     memcpy(input->data, data, length);
@@ -119,7 +119,8 @@ void buffer_update(buffer *input){
 }
 
 void buffer_bind(buffer *input){
-    glBindBuffer(input->type, input->id);
+    printf("\n=======buffer type: %u , %x", input->type, input->type);
+    GLCall(glBindBuffer(input->type, input->id));
 }
 void buffer_unbind(buffer *input){
     glBindBuffer(input->type, 0);
@@ -263,8 +264,12 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
             printf("Failed to initialize GLEW\n");
             exit(-1);
         }
-        glEnable(GL_DEBUG_OUTPUT);
-        glDebugMessageCallback(gl_debug_callback, 0);
+
+
+        //glEnable(GL_DEBUG_OUTPUT);
+        //glDebugMessageCallback(gl_debug_callback, 0);
+
+
         glfwSetKeyCallback(window, key_callback);
         //glEnable(GL_BLEND);
         //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
