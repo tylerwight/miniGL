@@ -41,7 +41,7 @@ int main(){
     //setup shaders
     shader main_shader;
     shader_create(&main_shader, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
-    shader_set_uniform_3f(&main_shader, "uniformColor", 0.1f, 0.5f, 0.1f);
+    //shader_set_uniform_3f(&main_shader, "uniformColor", 0.1f, 0.5f, 0.1f);
     
 
     // create the object
