@@ -216,6 +216,9 @@ void renderable_object_create2(renderable_object *input, float vertices[], int v
 
 void renderable_object_draw(renderable_object *input){
     vertex_array_bind(&(input->vao));
+    buffer_bind(&(input->vbo));
+    buffer_bind(&(input->ibo));
+
     glUseProgram(input->shader->program);
     //printf("shaderid = %d\n", input->shader->program);
     GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
@@ -260,7 +263,11 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        const unsigned char *glversion = glGetString(GL_VERSION);
+        printf("GL version is |%s|\n", glversion);
         return window;
+
+        
 }
 
 void GLClearError(){

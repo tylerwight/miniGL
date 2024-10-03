@@ -112,14 +112,14 @@ void vertex_array_delete(vertex_array *input);
 
 //renderer functions
 void renderable_object_create(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader);
-void renderable_object_link_texture(renderable_object *input, texture *texture);
+//void renderable_object_link_texture(renderable_object *input, texture *texture);
 void renderable_object_draw(renderable_object *input);
 void renderable_object_delete(renderable_object *input);
 //void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture);
 void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader);
 
 //textures
-void texture_load(texture *input, const char *path);
+//void texture_load(texture *input, const char *path);
 
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
 bool GLLogCall(const char* function, const char* file, int line);
