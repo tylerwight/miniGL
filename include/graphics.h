@@ -85,7 +85,7 @@ const char* shader_load_source(const char* file_path);
 void shader_create_program(shader *shader);
 GLuint shader_compile(GLenum type, const char* source);
 void shader_create(shader *input, const char *vertex_path, const char *fragment_path);
-
+void shader_set_uniform_3f(shader *shader, const char *name, float one, float two, float three);
 
 
 //buffers
@@ -106,7 +106,8 @@ void vertex_array_delete(vertex_array *input);
 void renderable_object_create(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader);
 void renderable_object_draw(renderable_object *input);
 void renderable_object_delete(renderable_object *input);
-void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader);
+//void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader);
+void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture);
 
 
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
