@@ -196,13 +196,14 @@ void renderable_object_create2(renderable_object *input, float vertices[], int v
     vertex_array_create(&VAO);
     buffer_create(&VBO, GL_ARRAY_BUFFER, vertices, sizeof(float) * vertices_count);
     buffer_create(&IBO, GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(GLuint) * indices_count);
+    IBO.indices_count = indices_count;
 
     vertex_array_bind(&VAO);
     buffer_bind(&VBO);
     buffer_bind(&IBO);
 
     for (int i = 0; i < attribute_count; i++){
-        glVertexAttribPointer(i, attributes[i].size, attributes[i].type, attributes[i].normalized, attributes[i].stride, attributes[i].pointer);
+        glVertexAttribPointer(attributes[i].index, attributes[i].size, attributes[i].type, attributes[i].normalized, attributes[i].stride, attributes[i].pointer);
         glEnableVertexAttribArray(i);
     }
 
@@ -217,8 +218,15 @@ void renderable_object_create2(renderable_object *input, float vertices[], int v
 
 void renderable_object_draw(renderable_object *input){
     vertex_array_bind(&(input->vao));
+    if (input->texture != NULL){
+        glBindTexture(GL_TEXTURE_2D, input->texture->id);
+    }
     glUseProgram(input->shader->program);
-    glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+
+    glDrawElements(GL_TRIANGLES, input->ibo.indices_count, GL_UNSIGNED_INT, 0);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    vertex_array_unbind(&(input->vao));
 }
 
 void renderable_object_delete(renderable_object *input){

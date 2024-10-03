@@ -32,7 +32,7 @@ typedef struct buffer {
     GLsizeiptr size;
     void* data;
     size_t length;
-    int index_count;
+    int indices_count;
 } buffer;
 
 typedef struct vertex_attrib_pointer{

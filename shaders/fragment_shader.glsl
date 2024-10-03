@@ -7,6 +7,6 @@ uniform vec3 uniformColor;
 
 void main()
 {
-    FragColor = vec4(uniformColor, 1.0);
-    //FragColor = texture(texture1, TexCoord);
+    //FragColor = vec4(uniformColor, 1.0);
+    FragColor = texture(texture1, TexCoord);
 }

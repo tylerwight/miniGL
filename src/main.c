@@ -20,12 +20,13 @@ int main(){
     window = setup_opengl(1024,768, key_callback);
 
     //Test data to make a square:
-    int vertices_count = 12;
+    int vertices_count = 16;
+    //coords + texture coords
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f, //bottom left
-        0.5f, -0.5f, 0.0f, // bottom right
-        0.5f, 0.5f, 0.0f, // top right
-        -0.5f, 0.5f, 0.0f, // top left
+        -0.2f, -0.2f, 0.0f, 0.0f, //bottom left
+         0.2f, -0.2f, 1.0f, 0.0f, // bottom right
+         0.2f,  0.2f, 1.0f, 1.0f, // top right
+        -0.2f,  0.2f, 0.0f, 1.0f // top left
     };
     int indicies_count = 6;
     GLuint indices[] = {
@@ -34,9 +35,10 @@ int main(){
     };
 
     //Vertex attributes for the square
-    vertex_attrib_pointer attributes[1];
-    int attribute_count = 1;
-    attributes[0] = vertex_array_attribute_create(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    vertex_attrib_pointer attributes[2];
+    int attribute_count = 2;
+    attributes[0] = vertex_array_attribute_create(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
+    attributes[1] = vertex_array_attribute_create(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
 
     //setup shaders
     shader main_shader;
