@@ -9,10 +9,17 @@
 #include <cglm/mat4.h> 
 #include <cglm/cam.h> 
 #include <cglm/affine.h>
+#include <signal.h>
 #include FT_FREETYPE_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define ASSERT(x) if (!(x)) raise(SIGTRAP);
+#define GLCall(x) GLClearError();\
+    x;\
+    ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+
 
 #define MAX_OBJECTS 1000
 #define MAX_VERTX_ATTRIBS 10
@@ -57,7 +64,7 @@ typedef struct texture {
     GLuint id;
     int width;
     int height;
-    unsigned char* data;
+    //unsigned char* data;
 } texture;
 
 typedef struct renderable_object {
@@ -85,6 +92,7 @@ const char* shader_load_source(const char* file_path);
 void shader_create_program(shader *shader);
 GLuint shader_compile(GLenum type, const char* source);
 void shader_create(shader *input, const char *vertex_path, const char *fragment_path);
+void shader_set_uniform_3f(shader *shader, const char *name, float one, float two, float three);
 
 
 
@@ -104,10 +112,15 @@ void vertex_array_delete(vertex_array *input);
 
 //renderer functions
 void renderable_object_create(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader);
+void renderable_object_link_texture(renderable_object *input, texture *texture);
 void renderable_object_draw(renderable_object *input);
 void renderable_object_delete(renderable_object *input);
-void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader);
+void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture);
 
+//textures
+void texture_load(texture *input, const char *path);
 
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
+bool GLLogCall(const char* function, const char* file, int line);
+void GLClearError();
 #endif
