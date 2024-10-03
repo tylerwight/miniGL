@@ -196,7 +196,9 @@ void renderable_object_create2(renderable_object *input, float vertices[], int v
     vertex_array_unbind(&VAO);
     buffer_unbind(&VBO);
     buffer_unbind(&IBO);
-
+    input->vao = VAO;
+    input->vbo = VBO;
+    input->ibo = IBO;
 }
 
 
