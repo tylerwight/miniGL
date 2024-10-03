@@ -72,7 +72,7 @@ typedef struct renderable_object {
     buffer vbo;
     buffer ibo;
     shader *shader;
-    texture *texture;
+    //texture *texture;
     mat4 model_matrix;
     GLsizei index_count;
 } renderable_object;

@@ -1,6 +1,6 @@
 #include "graphics.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+// #define STB_IMAGE_IMPLEMENTATION
+// #include "stb_image.h"
 
 
 //////////////////////////
@@ -209,9 +209,9 @@ void renderable_object_create2(renderable_object *input, float vertices[], int v
 
 }
 
-void renderable_object_link_texture(renderable_object *input, texture *texture){
-    input->texture = texture;
-}
+// void renderable_object_link_texture(renderable_object *input, texture *texture){
+//     input->texture = texture;
+// }
 
 
 void renderable_object_draw(renderable_object *input){
@@ -282,24 +282,24 @@ bool GLLogCall(const char* function, const char* file, int line){
 
 //TEXTURES
 
-void texture_load(texture *input, const char *path){
-    glGenTextures(1, &(input->id));
-    glBindTexture(GL_TEXTURE_2D, input->id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    int nrChannels;
-    unsigned char *data = stbi_load("assets/snek_head.png", &(input->width), &(input->height), &nrChannels, 0);
-    if (data){
-        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        //glTexImage2D(GL_TEXTURE_2D, 0, format, input->width, input->height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        printf("Texture loaded successfully: %d x %d, channels: %d\n", input->width, input->height, nrChannels);
+// void texture_load(texture *input, const char *path){
+//     glGenTextures(1, &(input->id));
+//     glBindTexture(GL_TEXTURE_2D, input->id);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//     int nrChannels;
+//     unsigned char *data = stbi_load("assets/snek_head.png", &(input->width), &(input->height), &nrChannels, 0);
+//     if (data){
+//         GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+//         //glTexImage2D(GL_TEXTURE_2D, 0, format, input->width, input->height, 0, format, GL_UNSIGNED_BYTE, data);
+//         glGenerateMipmap(GL_TEXTURE_2D);
+//         printf("Texture loaded successfully: %d x %d, channels: %d\n", input->width, input->height, nrChannels);
 
-    }else{
-        printf("Failed to load texture\n");
-    }
-    stbi_image_free(data);
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
+//     }else{
+//         printf("Failed to load texture\n");
+//     }
+//     stbi_image_free(data);
+//     glBindTexture(GL_TEXTURE_2D, 0);
+// }

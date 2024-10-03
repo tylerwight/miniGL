@@ -43,14 +43,10 @@ int main(){
     shader_create(&main_shader, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
     shader_set_uniform_3f(&main_shader, "uniformColor", 0.1f, 0.5f, 0.1f);
     
-    texture texture;
-    //load texture
-    //texture_load(&texture, "assets/snek_head.png");
 
     // create the object
     renderable_object square;
     
-    //renderable_object_create2(&square, vertices, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture);
     renderable_object_create2(&square, vertices, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader);
 
 
