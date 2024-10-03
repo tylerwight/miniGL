@@ -185,15 +185,9 @@ void renderable_object_create(renderable_object *input, vertex_array *vao, buffe
 
 }
 
-void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count,
-                                vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture){
+//void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture){
+void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader){
     input->shader = shader;
-    // if (texture != NULL){
-    //     input->texture = texture;
-    // } else{
-    //     input->texture = NULL;
-    // }
-    input->texture = NULL;
     vertex_array VAO;
     buffer VBO, IBO;
     vertex_array_create(&VAO);

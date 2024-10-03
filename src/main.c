@@ -45,12 +45,13 @@ int main(){
     
     texture texture;
     //load texture
-    texture_load(&texture, "assets/snek_head.png");
+    //texture_load(&texture, "assets/snek_head.png");
 
     // create the object
     renderable_object square;
     
-    renderable_object_create2(&square, vertices, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture);
+    //renderable_object_create2(&square, vertices, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture);
+    renderable_object_create2(&square, vertices, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader);
 
 
     //main loop
