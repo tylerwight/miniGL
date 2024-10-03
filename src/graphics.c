@@ -215,7 +215,7 @@ void renderable_object_draw(renderable_object *input){
     buffer_bind(&(input->vbo));
     buffer_bind(&(input->ibo));
 
-    glUseProgram(input->shader->program);
+    GLCall(glUseProgram(input->shader->program));
     //printf("shaderid = %d\n", input->shader->program);
     GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
 }
