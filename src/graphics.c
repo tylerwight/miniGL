@@ -196,6 +196,7 @@ void renderable_object_create2(renderable_object *input, float vertices[], int v
     input->shader = shader;
     vertex_array VAO;
     buffer VBO, IBO;
+    
     vertex_array_create(&VAO);
     buffer_create(&VBO, GL_ARRAY_BUFFER, vertices, sizeof(float) * vertices_count);
     buffer_create(&IBO, GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(GLuint) * indices_count);
@@ -213,15 +214,30 @@ void renderable_object_create2(renderable_object *input, float vertices[], int v
     buffer_unbind(&VBO);
     buffer_unbind(&IBO);
 
+    input->vao = VAO;
+    input->vbo = VBO;
+    input->ibo = IBO;
 }
 
-
+// void renderable_object_print(renderable_object *input){
+//     printf("RENDERABLE OBJECT:\n");
+//     printf("VAO:\n");
+//     printf("\tID: %u, attrib count: %u", input->vao.id, input->vao.attribute_count);
+//     printf("VBO:\n");
+//         printf("\tID: %u, type: %u", input->vbo.id, input->vbo.type);
+//         for (int i = 0; i < input->vbo.length, i++){printf("data: %c", (float)input->vbo.data[i]);}
+        
+//     printf("IBO:\n");
+//         printf("\tID: %u, type: %u", input->ibo.id, input->ibo.type);
+//         printf("data: %s", input->ibo.data);
+//     printf("SHADER:\n");
+// }
 
 
 void renderable_object_draw(renderable_object *input){
     vertex_array_bind(&(input->vao));
-    buffer_bind(&(input->vbo));
-    buffer_bind(&(input->ibo));
+    //buffer_bind(&(input->vbo));
+    //buffer_bind(&(input->ibo));
 
     GLCall(glUseProgram(input->shader->program));
     //printf("shaderid = %d\n", input->shader->program);
