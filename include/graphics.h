@@ -58,6 +58,7 @@ typedef struct texture {
     int width;
     int height;
     unsigned char* data;
+    char *path;
 } texture;
 
 typedef struct renderable_object {
@@ -85,6 +86,7 @@ const char* shader_load_source(const char* file_path);
 void shader_create_program(shader *shader);
 GLuint shader_compile(GLenum type, const char* source);
 void shader_create(shader *input, const char *vertex_path, const char *fragment_path);
+void shader_set_uniform_1i(shader *shader, const char *name, int one);
 void shader_set_uniform_3f(shader *shader, const char *name, float one, float two, float three);
 
 
@@ -109,6 +111,12 @@ void renderable_object_delete(renderable_object *input);
 //void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader);
 void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture);
 
+
+//textures
+void texture_load(texture *input, const char *path);
+void texture_delete(texture *input);
+void texture_bind(texture *input, int slot);
+void texture_unbind(texture *input);
 
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
 #endif

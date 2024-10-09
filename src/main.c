@@ -14,6 +14,11 @@
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
+struct square{
+    float vertices[16];
+    int indices[6];
+};
+
 
 int main(){
     GLFWwindow* window;
@@ -44,6 +49,7 @@ int main(){
     shader main_shader;
     shader_create(&main_shader, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
     shader_set_uniform_3f(&main_shader, "uniformColor", 0.1f, 0.5f, 0.1f);
+    shader_set_uniform_1i(&main_shader, "uniformTexture", 0);
     
     texture texture;
     //load texture
@@ -93,7 +99,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             case GLFW_KEY_RIGHT:
                 break;
             case GLFW_KEY_ESCAPE:
-                exit(0);
+                glfwSetWindowShouldClose(window, GLFW_TRUE);
                 break;
         }
     }

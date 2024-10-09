@@ -71,6 +71,13 @@ const char* shader_load_source(const char* file_path) {
     fclose(file);
     return buffer;
 }
+
+void shader_set_uniform_1i(shader *shader, const char *name, int one){
+    int tmp = glGetUniformLocation(shader->program, name);
+    glUseProgram(shader->program);
+    glUniform1i(tmp, one);
+}
+
 void shader_set_uniform_3f(shader *shader, const char *name, float one, float two, float three){
     int tmp = glGetUniformLocation(shader->program, name);
     glUseProgram(shader->program);
@@ -219,7 +226,8 @@ void renderable_object_create2(renderable_object *input, float vertices[], int v
 void renderable_object_draw(renderable_object *input){
     vertex_array_bind(&(input->vao));
     if (input->texture != NULL){
-        glBindTexture(GL_TEXTURE_2D, input->texture->id);
+        //glBindTexture(GL_TEXTURE_2D, input->texture->id);
+        texture_bind(input->texture, 0);
     }
     glUseProgram(input->shader->program);
 
@@ -276,12 +284,15 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
 //TEXTURES
 
 void texture_load(texture *input, const char *path){
+
     glGenTextures(1, &(input->id));
     glBindTexture(GL_TEXTURE_2D, input->id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     int nrChannels;
     unsigned char *data = stbi_load(path, &(input->width), &(input->height), &nrChannels, 0);
     if (data){
@@ -289,10 +300,23 @@ void texture_load(texture *input, const char *path){
         glTexImage2D(GL_TEXTURE_2D, 0, format, input->width, input->height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
         printf("Texture loaded successfully: %d x %d, channels: %d\n", input->width, input->height, nrChannels);
+        input->data = data;
 
     }else{
         printf("Failed to load texture\n");
     }
-    stbi_image_free(data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
+void texture_delete(texture *input){
+    glDeleteTextures(1, &(input->id));
+}
+
+void texture_bind(texture *input, int slot){
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, input->id);
+}
+void texture_unbind(texture *input){
     glBindTexture(GL_TEXTURE_2D, 0);
 }
