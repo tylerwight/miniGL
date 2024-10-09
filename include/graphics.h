@@ -88,7 +88,8 @@ GLuint shader_compile(GLenum type, const char* source);
 void shader_create(shader *input, const char *vertex_path, const char *fragment_path);
 void shader_set_uniform_1i(shader *shader, const char *name, int one);
 void shader_set_uniform_3f(shader *shader, const char *name, float one, float two, float three);
-
+void shader_set_uniform_4f(shader *shader, const char *name, float one, float two, float three, float four);
+void shader_set_uniform_mat4f(shader *shader, const char *name, mat4 one);
 
 //buffers
 void buffer_create(buffer *input, GLenum type, void *data, size_t length);

@@ -84,6 +84,17 @@ void shader_set_uniform_3f(shader *shader, const char *name, float one, float tw
     glUniform3f(tmp, one, two, three);
 }
 
+void shader_set_uniform_4f(shader *shader, const char *name, float one, float two, float three, float four){
+    int tmp = glGetUniformLocation(shader->program, name);
+    glUseProgram(shader->program);
+    glUniform4f(tmp, one, two, three, four);
+}
+void shader_set_uniform_mat4f(shader *shader, const char *name, mat4 one){
+    int tmp = glGetUniformLocation(shader->program, name);
+    glUseProgram(shader->program);
+    glUniformMatrix4fv(tmp, 1, GL_FALSE, &one[0][0]);
+}
+
 void shader_create(shader *input, const char *vertex_path, const char *fragment_path){
     input->vertex_source = shader_load_source(vertex_path);
     input->fragment_source = shader_load_source(fragment_path);

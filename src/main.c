@@ -9,6 +9,11 @@
 #include <stdlib.h>
 #include <time.h>
 #include "graphics.h"
+#include <cglm/cglm.h>
+#include <cglm/vec3.h>
+#include <cglm/mat4.h> 
+#include <cglm/cam.h> 
+#include <cglm/affine.h>
 //#include "game.h"
 
 
@@ -18,6 +23,7 @@ struct square{
     float vertices[16];
     int indices[6];
 };
+
 
 
 int main(){
@@ -45,11 +51,16 @@ int main(){
     attributes[0] = vertex_array_attribute_create(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
     attributes[1] = vertex_array_attribute_create(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
 
+
+    mat4 proj;
+    glm_ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f, proj);
+
     //setup shaders
     shader main_shader;
     shader_create(&main_shader, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
     shader_set_uniform_3f(&main_shader, "uniformColor", 0.1f, 0.5f, 0.1f);
     shader_set_uniform_1i(&main_shader, "uniformTexture", 0);
+    shader_set_uniform_mat4f(&main_shader, "uniformMVP", proj);
     
     texture texture;
     //load texture
