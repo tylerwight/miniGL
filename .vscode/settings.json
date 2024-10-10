@@ -1,6 +1,10 @@
 {
     "files.associations": {
         "type_traits": "c",
-        "graphics.h": "c"
+        "graphics.h": "c",
+        "stdlib.h": "c",
+        "cglm.h": "c",
+        "mat4.h": "c",
+        "alut.h": "c"
     }
 }

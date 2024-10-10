@@ -19,56 +19,51 @@
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-struct square{
-    float vertices[16];
-    int indices[6];
-};
-
-
 
 int main(){
     GLFWwindow* window;
     window = setup_opengl(1024,768, key_callback);
 
-    //Test data to make a square:
-    int vertices_count = 16;
-    //coords + texture coords
-    float vertices[] = {
-        -0.2f, -0.2f, 0.0f, 0.0f, //bottom left
-         0.2f, -0.2f, 1.0f, 0.0f, // bottom right
-         0.2f,  0.2f, 1.0f, 1.0f, // top right
-        -0.2f,  0.2f, 0.0f, 1.0f // top left
-    };
-    int indicies_count = 6;
-    GLuint indices[] = {
-        0, 2, 1,
-        3, 2, 0
-    };
-
-    //Vertex attributes for the square
-    vertex_attrib_pointer attributes[2];
-    int attribute_count = 2;
-    attributes[0] = vertex_array_attribute_create(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
-    attributes[1] = vertex_array_attribute_create(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
-
-
-    mat4 proj;
-    glm_ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f, proj);
+    //projections
+    mat4 projection_matrix;
+    glm_ortho(-200.0f, 200.0f, -150.0f, 150.0f, -1.0f, 1.0f, projection_matrix);
 
     //setup shaders
     shader main_shader;
     shader_create(&main_shader, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
     shader_set_uniform_3f(&main_shader, "uniformColor", 0.1f, 0.5f, 0.1f);
     shader_set_uniform_1i(&main_shader, "uniformTexture", 0);
-    shader_set_uniform_mat4f(&main_shader, "uniformMVP", proj);
+    shader_set_uniform_mat4f(&main_shader, "uniformMVP", projection_matrix);
     
+
+    //Create quad vertex data
+    int vertices_count = 8;
+    quad quad1;
+    quad_create(-20.0f, -20.0f, 40.0f, &quad1);
+    
+
+    int indicies_count = 6;
+    GLuint indices[] = {
+        0, 2, 1,
+        3, 2, 0
+    };
+
+
+    //Vertex attributes for the quad
+    vertex_attrib_pointer attributes[2];
+    int attribute_count = 2;
+    attributes[0] = vertex_array_attribute_create(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
+    attributes[1] = vertex_array_attribute_create(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
+
+
+
+    //load textures
     texture texture;
-    //load texture
     texture_load(&texture, "assets/snek_head.png");
-    
+
     // create the object
     renderable_object square;
-    renderable_object_create2(&square, vertices, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture);
+    renderable_object_create(&square, &quad1, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture);
 
 
     //main loop

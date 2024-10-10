@@ -181,7 +181,7 @@ vertex_attrib_pointer vertex_array_attribute_create(GLuint index, GLint size, GL
 //////////////////////////
 //////RENDERABLE OBJECTS////////////
 /////////////////////////
-void renderable_object_create(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader){
+void renderable_object_link(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader){
     input->vao = *vao;
     input->vbo = *vbo;
     input->ibo = *ibo;
@@ -202,7 +202,7 @@ void renderable_object_create(renderable_object *input, vertex_array *vao, buffe
 
 }
 
-void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture){
+void renderable_object_create(renderable_object *input, void *vertices, int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture){
     input->shader = shader;
     if (texture != NULL){
         input->texture = texture;
@@ -212,7 +212,7 @@ void renderable_object_create2(renderable_object *input, float vertices[], int v
     vertex_array VAO;
     buffer VBO, IBO;
     vertex_array_create(&VAO);
-    buffer_create(&VBO, GL_ARRAY_BUFFER, vertices, sizeof(float) * vertices_count);
+    buffer_create(&VBO, GL_ARRAY_BUFFER, vertices, vertices_count * sizeof(vertex));
     buffer_create(&IBO, GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(GLuint) * indices_count);
     IBO.indices_count = indices_count;
 
@@ -257,38 +257,7 @@ void renderable_object_delete(renderable_object *input){
 
 
 
-//////////////////////////
-//////GENERAL////////////
-/////////////////////////
-GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) ){
-    GLFWwindow* window;
-    if (!glfwInit()){exit(-1);}
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-        window = glfwCreateWindow(resolution_x, resolution_y, "Snek", NULL, NULL);
-        if (!window){
-            glfwTerminate();
-            exit(-1);
-        }
-
-
-        glfwMakeContextCurrent(window);
-
-        if (glewInit() != GLEW_OK)
-        {
-            printf("Failed to initialize GLEW\n");
-            exit(-1);
-        }
-        glfwSetKeyCallback(window, key_callback);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        return window;
-}
 
 
 //textures
@@ -330,4 +299,72 @@ void texture_bind(texture *input, int slot){
 }
 void texture_unbind(texture *input){
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
+//vertices setup
+
+void quad_create(float x, float y, int size, quad *dest){
+    struct vertex v0;
+    v0.position[0] = x;
+    v0.position[1] = y;
+    v0.text_coords[0] = 0.0f;
+    v0.text_coords[1] = 0.0f;
+    
+    struct vertex v1;
+    v1.position[0] = x + size;
+    v1.position[1] = y;
+    v1.text_coords[0] = 1.0f;
+    v1.text_coords[1] = 0.0f;
+
+    struct vertex v2;
+    v2.position[0] = x + size;
+    v2.position[1] = y + size;
+    v2.text_coords[0] = 1.0f;
+    v2.text_coords[1] = 1.0f;
+
+    struct vertex v3;
+    v3.position[0] = x;
+    v3.position[1] = y + size;
+    v3.text_coords[0] = 0.0f;
+    v3.text_coords[1] = 1.0f;
+
+    dest->v0 = v0; 
+    dest->v1 = v1;
+    dest->v2 = v2;
+    dest->v3 = v3;
+
+}
+
+//////////////////////////
+//////GENERAL////////////
+/////////////////////////
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) ){
+    GLFWwindow* window;
+    if (!glfwInit()){exit(-1);}
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        window = glfwCreateWindow(resolution_x, resolution_y, "Snek", NULL, NULL);
+        if (!window){
+            glfwTerminate();
+            exit(-1);
+        }
+
+
+        glfwMakeContextCurrent(window);
+
+        if (glewInit() != GLEW_OK)
+        {
+            printf("Failed to initialize GLEW\n");
+            exit(-1);
+        }
+        glfwSetKeyCallback(window, key_callback);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        return window;
 }

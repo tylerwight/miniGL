@@ -77,7 +77,14 @@ typedef struct renderer {
     int object_count;
 } renderer;
 
+typedef struct vertex{
+    float position[2];
+    float text_coords[2];
+} vertex;
 
+typedef struct quad{
+    struct vertex v0, v1, v2, v3;
+} quad;
 
 
 
@@ -106,11 +113,10 @@ vertex_attrib_pointer vertex_array_attribute_create(GLuint index, GLint size, GL
 void vertex_array_delete(vertex_array *input);
 
 //renderer functions
-void renderable_object_create(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader);
+void renderable_object_link(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader);
 void renderable_object_draw(renderable_object *input);
 void renderable_object_delete(renderable_object *input);
-//void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader);
-void renderable_object_create2(renderable_object *input, float vertices[], int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture);
+void renderable_object_create(renderable_object *input, void *vertices, int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture);
 
 
 //textures
@@ -119,5 +125,13 @@ void texture_delete(texture *input);
 void texture_bind(texture *input, int slot);
 void texture_unbind(texture *input);
 
+
+//vertices setup
+void quad_create(float x, float y, int size, quad *dest);
+
+
+
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
 #endif
+
+
