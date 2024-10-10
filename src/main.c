@@ -25,21 +25,40 @@ int main(){
     window = setup_opengl(1024,768, key_callback);
 
     //projections
-    mat4 projection_matrix;
-    glm_ortho(-200.0f, 200.0f, -150.0f, 150.0f, -1.0f, 1.0f, projection_matrix);
+    mat4 projection;
+    glm_ortho(0.0f, 1024.0f, 0.0f, 768.0f, -1.0f, 1.0f, projection);
+
+    mat4 view;
+    glm_mat4_identity(view);
+    vec3 viewtranslation = {-100.f, 0.0f, 0.0f};
+    glm_translate(view, viewtranslation);
+
+
+    mat4 model;
+    glm_mat4_identity(model);
+    vec3 modeltranslation = {200, 200, 0};
+    glm_translate(model, modeltranslation);
+
+
+    mat4 mvp;
+    mat4 temp;
+    glm_mat4_mul(projection, view, temp);
+    glm_mat4_mul(temp, model, mvp);
+
 
     //setup shaders
     shader main_shader;
     shader_create(&main_shader, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
     shader_set_uniform_3f(&main_shader, "uniformColor", 0.1f, 0.5f, 0.1f);
     shader_set_uniform_1i(&main_shader, "uniformTexture", 0);
-    shader_set_uniform_mat4f(&main_shader, "uniformMVP", projection_matrix);
+    shader_set_uniform_mat4f(&main_shader, "uniformMVP", mvp);
     
 
     //Create quad vertex data
     int vertices_count = 8;
-    quad quad1;
-    quad_create(-20.0f, -20.0f, 40.0f, &quad1);
+    quad quad1, quad2;
+    quad_create(300.0f, 300.0f, 100.0f, &quad1);
+    quad_create(600.0f, 200.0f, 40.0f, &quad2);
     
 
     int indicies_count = 6;
@@ -62,8 +81,9 @@ int main(){
     texture_load(&texture, "assets/snek_head.png");
 
     // create the object
-    renderable_object square;
-    renderable_object_create(&square, &quad1, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture);
+    renderable_object square1, square2;
+    renderable_object_create(&square1, &quad1, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture);
+    renderable_object_create(&square2, &quad2, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture);
 
 
     //main loop
@@ -71,14 +91,16 @@ int main(){
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        renderable_object_draw(&square);
+        renderable_object_draw(&square1);
+        renderable_object_draw(&square2);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
 
-    renderable_object_delete(&square);
+    renderable_object_delete(&square1);
+    renderable_object_delete(&square2);
     glfwTerminate();
     return 0;
 }
