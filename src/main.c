@@ -47,10 +47,10 @@ int main(){
     //setup shaders
     shader main_shader;
     shader_create(&main_shader, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
-    shader_set_uniform_1i(&main_shader, "uniformTexture", 0);
+    //shader_set_uniform_1i(&main_shader, "uniformTexture", 0);
     shader_set_uniform_mat4f(&main_shader, "uniformMVP", mvp);
-    int samplers[2] = {1, 2};
-    shader_set_uniform_1iv(&main_shader, "u_textures", 2, samplers);
+    int samplers[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    shader_set_uniform_1iv(&main_shader, "u_textures", 10, samplers);
     
 
     //create some colors
@@ -61,17 +61,21 @@ int main(){
     
 
     //load textures
-    texture texture;
-    texture_load(&texture, "assets/snek_head.png");
-    glBindTextureUnit(1, texture.id);
+    texture texture_head;
+    texture texture_body;
+    texture_load(&texture_head, "assets/snek_head.png");
+    texture_load(&texture_body, "assets/snek_body1.png");
+    glBindTextureUnit(1, texture_head.id);
+    glBindTextureUnit(2, texture_body.id);
+    
 
     //Create quad vertex data
     int vertices_count = 8;
     quad quad_red, quad_green, quad_blue;
 
-    quad_create(&quad_red, 200.0f, 100.0f, 50.0f, red);
-    quad_create(&quad_green, 300.0f, 300.0f, 100.0f, green);
-    quad_create(&quad_blue, 600.0f, 200.0f, 40.0f, blue);
+    quad_create(&quad_red, 100.0f, 150.0f, 150.0f, red, 0.0f);
+    quad_create(&quad_green, 400.0f, 150.0f, 100.0f, green, 1.0f);
+    quad_create(&quad_blue, 700.0f, 150.0f, 50.0f, blue, 2.0f);
     
 
     int indicies_count = 6;
@@ -99,9 +103,10 @@ int main(){
 
     // create the object
     renderable_object square_red, square_green, square_blue;
-    renderable_object_create(&square_red, &quad_red, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture);
-    renderable_object_create(&square_green, &quad_green, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture);
-    renderable_object_create(&square_blue, &quad_blue, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture);
+    renderable_object_create(&square_red, &quad_red, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_head);
+    renderable_object_create(&square_green, &quad_green, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_head);
+
+    renderable_object_create(&square_blue, &quad_blue, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_head);
 
 
     //main loop

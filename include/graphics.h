@@ -72,10 +72,10 @@ typedef struct renderable_object {
 } renderable_object;
 
 
-typedef struct renderer {
-    renderable_object objects[MAX_OBJECTS];
-    int object_count;
-} renderer;
+// typedef struct renderer {
+//     renderable_object objects[MAX_OBJECTS];
+//     int object_count;
+// } renderer;
 
 typedef struct color{
     float r;
@@ -96,10 +96,10 @@ typedef struct quad{
 } quad;
 
 
-typedef struct batch{
+typedef struct renderer{
     void* vetex_data;
     void* index_data;
-} batch;
+} renderer;
 
 
 
@@ -146,7 +146,7 @@ void texture_unbind(texture *input);
 void color_set(color* dest, float r, float g, float b, float a);
 
 //vertices setup
-void quad_create(quad *dest, float x, float y, int size, color color);
+void quad_create(quad *dest, float x, float y, int size, color color, float texture_id);
 
 //batching
 //void batch_add($)

@@ -98,7 +98,7 @@ void shader_set_uniform_mat4f(shader *shader, const char *name, mat4 one){
 void shader_set_uniform_1iv(shader *shader, const char *name, int count , int array[]){
     int tmp = glGetUniformLocation(shader->program, name);
     glUseProgram(shader->program);
-    glUniform1iv(tmp, 2, array);
+    glUniform1iv(tmp, count, array);
 }
 
 void shader_create(shader *input, const char *vertex_path, const char *fragment_path){
@@ -241,12 +241,13 @@ void renderable_object_create(renderable_object *input, void *vertices, int vert
 
 
 void renderable_object_draw(renderable_object *input){
+    glUseProgram(input->shader->program);
     vertex_array_bind(&(input->vao));
     if (input->texture != NULL){
         //glBindTexture(GL_TEXTURE_2D, input->texture->id);
-        texture_bind(input->texture, 0);
+        //texture_bind(input->texture, 1);
     }
-    glUseProgram(input->shader->program);
+    
 
     glDrawElements(GL_TRIANGLES, input->ibo.indices_count, GL_UNSIGNED_INT, 0);
 
@@ -271,7 +272,8 @@ void renderable_object_delete(renderable_object *input){
 
 void texture_load(texture *input, const char *path){
 
-    glGenTextures(1, &(input->id));
+    //glGenTextures(1, &(input->id));
+    glCreateTextures(GL_TEXTURE_2D, 1, &(input->id));
     glBindTexture(GL_TEXTURE_2D, input->id);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);    
@@ -284,7 +286,7 @@ void texture_load(texture *input, const char *path){
     if (data){
         GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
         glTexImage2D(GL_TEXTURE_2D, 0, format, input->width, input->height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        //glGenerateMipmap(GL_TEXTURE_2D);
         printf("Texture loaded successfully: %d x %d, channels: %d\n", input->width, input->height, nrChannels);
         input->data = data;
 
@@ -319,13 +321,13 @@ void color_set(color* dest, float r, float g, float b, float a){
 
 //vertices setup
 
-void quad_create(quad *dest, float x, float y, int size, color color){
+void quad_create(quad *dest, float x, float y, int size, color color, float texture_id){
     struct vertex v0;
     v0.position[0] = x;
     v0.position[1] = y;
     v0.text_coords[0] = 0.0f;
     v0.text_coords[1] = 0.0f;
-    v0.text_index = 0.0f;
+    v0.text_index = texture_id;
     v0.color[0] = color.r;
     v0.color[1] = color.g;
     v0.color[2] = color.b;
@@ -336,7 +338,7 @@ void quad_create(quad *dest, float x, float y, int size, color color){
     v1.position[1] = y;
     v1.text_coords[0] = 1.0f;
     v1.text_coords[1] = 0.0f;
-    v0.text_index = 0.0f;
+    v1.text_index = texture_id;
     v1.color[0] = color.r;
     v1.color[1] = color.g;
     v1.color[2] = color.b;
@@ -347,7 +349,7 @@ void quad_create(quad *dest, float x, float y, int size, color color){
     v2.position[1] = y + size;
     v2.text_coords[0] = 1.0f;
     v2.text_coords[1] = 1.0f;
-    v0.text_index = 0.0f;
+    v2.text_index = texture_id;
     v2.color[0] = color.r;
     v2.color[1] = color.g;
     v2.color[2] = color.b;
@@ -358,7 +360,7 @@ void quad_create(quad *dest, float x, float y, int size, color color){
     v3.position[1] = y + size;
     v3.text_coords[0] = 0.0f;
     v3.text_coords[1] = 1.0f;
-    v0.text_index = 0.0f;
+    v3.text_index = texture_id;
     v3.color[0] = color.r;
     v3.color[1] = color.g;
     v3.color[2] = color.b;
@@ -378,8 +380,8 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
     GLFWwindow* window;
     if (!glfwInit()){exit(-1);}
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         window = glfwCreateWindow(resolution_x, resolution_y, "OpenGL_Renderer", NULL, NULL);
@@ -387,13 +389,14 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
             glfwTerminate();
             exit(-1);
         }
-        
+        glfwMakeContextCurrent(window);
+
         // Query and print the actual OpenGL version being used
         const GLubyte* version = glGetString(GL_VERSION);
         printf("OpenGL version: %s\n", version);
 
 
-        glfwMakeContextCurrent(window);
+        
 
         if (glewInit() != GLEW_OK)
         {
