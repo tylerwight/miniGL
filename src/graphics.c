@@ -95,6 +95,12 @@ void shader_set_uniform_mat4f(shader *shader, const char *name, mat4 one){
     glUniformMatrix4fv(tmp, 1, GL_FALSE, &one[0][0]);
 }
 
+void shader_set_uniform_1iv(shader *shader, const char *name, int count , int array[]){
+    int tmp = glGetUniformLocation(shader->program, name);
+    glUseProgram(shader->program);
+    glUniform1iv(tmp, 2, array);
+}
+
 void shader_create(shader *input, const char *vertex_path, const char *fragment_path){
     input->vertex_source = shader_load_source(vertex_path);
     input->fragment_source = shader_load_source(fragment_path);
@@ -302,32 +308,61 @@ void texture_unbind(texture *input){
 }
 
 
+//colors
+
+void color_set(color* dest, float r, float g, float b, float a){
+    dest->r = r;
+    dest->g = g;
+    dest->b = b;
+    dest->a = a;
+}
+
 //vertices setup
 
-void quad_create(float x, float y, int size, quad *dest){
+void quad_create(quad *dest, float x, float y, int size, color color){
     struct vertex v0;
     v0.position[0] = x;
     v0.position[1] = y;
     v0.text_coords[0] = 0.0f;
     v0.text_coords[1] = 0.0f;
+    v0.text_index = 0.0f;
+    v0.color[0] = color.r;
+    v0.color[1] = color.g;
+    v0.color[2] = color.b;
+    v0.color[3] = color.a;
     
     struct vertex v1;
     v1.position[0] = x + size;
     v1.position[1] = y;
     v1.text_coords[0] = 1.0f;
     v1.text_coords[1] = 0.0f;
+    v0.text_index = 0.0f;
+    v1.color[0] = color.r;
+    v1.color[1] = color.g;
+    v1.color[2] = color.b;
+    v1.color[3] = color.a;
 
     struct vertex v2;
     v2.position[0] = x + size;
     v2.position[1] = y + size;
     v2.text_coords[0] = 1.0f;
     v2.text_coords[1] = 1.0f;
+    v0.text_index = 0.0f;
+    v2.color[0] = color.r;
+    v2.color[1] = color.g;
+    v2.color[2] = color.b;
+    v2.color[3] = color.a;
 
     struct vertex v3;
     v3.position[0] = x;
     v3.position[1] = y + size;
     v3.text_coords[0] = 0.0f;
     v3.text_coords[1] = 1.0f;
+    v0.text_index = 0.0f;
+    v3.color[0] = color.r;
+    v3.color[1] = color.g;
+    v3.color[2] = color.b;
+    v3.color[3] = color.a;
 
     dest->v0 = v0; 
     dest->v1 = v1;
@@ -347,11 +382,15 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        window = glfwCreateWindow(resolution_x, resolution_y, "Snek", NULL, NULL);
+        window = glfwCreateWindow(resolution_x, resolution_y, "OpenGL_Renderer", NULL, NULL);
         if (!window){
             glfwTerminate();
             exit(-1);
         }
+        
+        // Query and print the actual OpenGL version being used
+        const GLubyte* version = glGetString(GL_VERSION);
+        printf("OpenGL version: %s\n", version);
 
 
         glfwMakeContextCurrent(window);

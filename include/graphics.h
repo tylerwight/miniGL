@@ -77,14 +77,30 @@ typedef struct renderer {
     int object_count;
 } renderer;
 
+typedef struct color{
+    float r;
+    float g;
+    float b;
+    float a;
+} color;
+
 typedef struct vertex{
     float position[2];
     float text_coords[2];
+    float text_index;
+    float color[4];
 } vertex;
 
 typedef struct quad{
     struct vertex v0, v1, v2, v3;
 } quad;
+
+
+typedef struct batch{
+    void* vetex_data;
+    void* index_data;
+} batch;
+
 
 
 
@@ -97,6 +113,7 @@ void shader_set_uniform_1i(shader *shader, const char *name, int one);
 void shader_set_uniform_3f(shader *shader, const char *name, float one, float two, float three);
 void shader_set_uniform_4f(shader *shader, const char *name, float one, float two, float three, float four);
 void shader_set_uniform_mat4f(shader *shader, const char *name, mat4 one);
+void shader_set_uniform_1iv(shader *shader, const char *name, int count , int array[]);
 
 //buffers
 void buffer_create(buffer *input, GLenum type, void *data, size_t length);
@@ -125,13 +142,18 @@ void texture_delete(texture *input);
 void texture_bind(texture *input, int slot);
 void texture_unbind(texture *input);
 
+//color
+void color_set(color* dest, float r, float g, float b, float a);
 
 //vertices setup
-void quad_create(float x, float y, int size, quad *dest);
+void quad_create(quad *dest, float x, float y, int size, color color);
+
+//batching
+//void batch_add($)
 
 
 
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
+
+
 #endif
-
-
