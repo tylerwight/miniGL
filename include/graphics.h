@@ -99,6 +99,8 @@ typedef struct quad{
 typedef struct renderer{
     void* vetex_data;
     void* index_data;
+    GLuint bound_textures[10];
+    int current_texture_slot;
 } renderer;
 
 

@@ -65,17 +65,17 @@ int main(){
     texture texture_body;
     texture_load(&texture_head, "assets/snek_head.png");
     texture_load(&texture_body, "assets/snek_body1.png");
-    glBindTextureUnit(1, texture_head.id);
-    glBindTextureUnit(2, texture_body.id);
+    //glBindTextureUnit(1, texture_head.id);
+    //glBindTextureUnit(2, texture_body.id);
     
 
     //Create quad vertex data
     int vertices_count = 8;
     quad quad_red, quad_green, quad_blue;
 
-    quad_create(&quad_red, 100.0f, 150.0f, 150.0f, red, 0.0f);
-    quad_create(&quad_green, 400.0f, 150.0f, 100.0f, green, 1.0f);
-    quad_create(&quad_blue, 700.0f, 150.0f, 50.0f, blue, 2.0f);
+    quad_create(&quad_red, 100.0f, 150.0f, 150.0f, red, -1.0f);
+    quad_create(&quad_green, 400.0f, 150.0f, 100.0f, green, -1.0f);
+    quad_create(&quad_blue, 700.0f, 150.0f, 50.0f, blue, -1.0f);
     
 
     int indicies_count = 6;
@@ -103,10 +103,9 @@ int main(){
 
     // create the object
     renderable_object square_red, square_green, square_blue;
-    renderable_object_create(&square_red, &quad_red, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_head);
+    renderable_object_create(&square_red, &quad_red, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_body);
     renderable_object_create(&square_green, &quad_green, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_head);
-
-    renderable_object_create(&square_blue, &quad_blue, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_head);
+    renderable_object_create(&square_blue, &quad_blue, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_body);
 
 
     //main loop

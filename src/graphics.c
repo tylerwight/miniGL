@@ -124,14 +124,30 @@ void buffer_create(buffer *input, GLenum type, void *data, size_t length){
 
     input->type = type;
     input->length = length;
+    buffer_bind(input);
+    glBufferData(input->type, input->length, input->data, GL_DYNAMIC_DRAW);
+    buffer_unbind(input);
 
-    buffer_update(input);
 }
 
 void buffer_update(buffer *input){
     buffer_bind(input);
-    glBufferData(input->type, input->length, input->data, GL_DYNAMIC_DRAW);
+    glBufferSubData(input->type, 0, input->length, input->data);
     buffer_unbind(input);
+}
+
+void buffer_update_text_id(buffer *input, float id){
+    buffer_bind(input);
+    vertex *vertices = (vertex*) input->data;
+    int vertices_count = input->length/sizeof(vertex);
+
+    for (int i = 0; i < vertices_count; i++){
+        vertices[i].text_index = id;
+    }
+    
+    glBufferSubData(input->type, 0, input->length, vertices);
+    buffer_unbind(input);
+
 }
 
 void buffer_bind(buffer *input){
@@ -243,14 +259,15 @@ void renderable_object_create(renderable_object *input, void *vertices, int vert
 void renderable_object_draw(renderable_object *input){
     glUseProgram(input->shader->program);
     vertex_array_bind(&(input->vao));
+
+    //set texture slot if there is a texture
     if (input->texture != NULL){
-        //glBindTexture(GL_TEXTURE_2D, input->texture->id);
-        //texture_bind(input->texture, 1);
+        glBindTextureUnit(1, input->texture->id);// assign texture to slot 1
+        buffer_update_text_id(&(input->vbo), 1.0f);
     }
     
 
     glDrawElements(GL_TRIANGLES, input->ibo.indices_count, GL_UNSIGNED_INT, 0);
-
     glBindTexture(GL_TEXTURE_2D, 0);
     vertex_array_unbind(&(input->vao));
 }
@@ -320,6 +337,17 @@ void color_set(color* dest, float r, float g, float b, float a){
 }
 
 //vertices setup
+
+void vertex_set_texture_slot(vertex *vertex, int slot){
+    vertex->text_index = slot;
+}
+
+void quad_set_texture_slot(quad *quad, float slot){
+    quad->v0.text_index = slot;
+    quad->v1.text_index = slot;
+    quad->v2.text_index = slot;
+    quad->v3.text_index = slot;
+}
 
 void quad_create(quad *dest, float x, float y, int size, color color, float texture_id){
     struct vertex v0;
