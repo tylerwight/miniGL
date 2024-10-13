@@ -70,7 +70,7 @@ int main(){
     
 
     //Create quad vertex data
-    int vertices_count = 8;
+    int vertices_count = 4;
     quad quad_red, quad_green, quad_blue;
 
     quad_create(&quad_red, 100.0f, 150.0f, 150.0f, red, -1.0f);
@@ -103,19 +103,29 @@ int main(){
 
     // create the object
     renderable_object square_red, square_green, square_blue;
-    renderable_object_create(&square_red, &quad_red, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_body);
+    renderable_object_create(&square_red, &quad_red, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, NULL);
     renderable_object_create(&square_green, &quad_green, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_head);
     renderable_object_create(&square_blue, &quad_blue, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_body);
+    //renderable_object_print(&square_red, "SQUARE RED");
+    printf("attrib count (MAIN) %d\n", square_red.vao.attribute_count);
 
+    renderer renderer;
+
+    renderer.objects[0] = square_red;
+    renderer.objects[1] = square_green;
+    renderer.objects[2] = square_blue;
+    renderer_inintalize(&renderer);
+    
 
     //main loop
     while (!glfwWindowShouldClose(window)){ // game loop
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        renderable_object_draw(&square_red);
-        renderable_object_draw(&square_green);
-        renderable_object_draw(&square_blue);
+        // renderable_object_draw(&square_red);
+        // renderable_object_draw(&square_green);
+        // renderable_object_draw(&square_blue);
+        renderer_draw(&renderer);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

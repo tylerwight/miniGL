@@ -97,8 +97,12 @@ typedef struct quad{
 
 
 typedef struct renderer{
-    void* vetex_data;
-    void* index_data;
+    renderable_object objects[3];
+    vertex_array vao;
+    buffer vbo;
+    int vertex_data_length;
+    buffer ibo;
+    int indices_count;
     GLuint bound_textures[10];
     int current_texture_slot;
 } renderer;
@@ -122,6 +126,7 @@ void buffer_create(buffer *input, GLenum type, void *data, size_t length);
 void buffer_bind(buffer *input);
 void buffer_unbind(buffer *input);
 void buffer_update(buffer *input);
+void buffer_update_text_id(buffer *input, float id);
 void buffer_delete(buffer *input);
 
 //vertex arrays
@@ -131,12 +136,16 @@ void vertex_array_unbind(vertex_array *input);
 vertex_attrib_pointer vertex_array_attribute_create(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLvoid *pointer);
 void vertex_array_delete(vertex_array *input);
 
-//renderer functions
+//renderable Object functions
 void renderable_object_link(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader);
 void renderable_object_draw(renderable_object *input);
 void renderable_object_delete(renderable_object *input);
 void renderable_object_create(renderable_object *input, void *vertices, int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture);
+void renderable_object_print(renderable_object *input, const char* name);
 
+//renderer
+void renderer_draw(renderer *input);
+void renderer_inintalize(renderer *input);
 
 //textures
 void texture_load(texture *input, const char *path);
@@ -148,6 +157,7 @@ void texture_unbind(texture *input);
 void color_set(color* dest, float r, float g, float b, float a);
 
 //vertices setup
+void print_vertex(vertex *input);
 void quad_create(quad *dest, float x, float y, int size, color color, float texture_id);
 
 //batching

@@ -139,6 +139,7 @@ void buffer_update(buffer *input){
 void buffer_update_text_id(buffer *input, float id){
     buffer_bind(input);
     vertex *vertices = (vertex*) input->data;
+    
     int vertices_count = input->length/sizeof(vertex);
 
     for (int i = 0; i < vertices_count; i++){
@@ -241,11 +242,14 @@ void renderable_object_create(renderable_object *input, void *vertices, int vert
     vertex_array_bind(&VAO);
     buffer_bind(&VBO);
     buffer_bind(&IBO);
-
-    for (int i = 0; i < attribute_count; i++){
+    
+    VAO.attribute_count = attribute_count;
+    for (int i=0; i < attribute_count; i++){
+        VAO.attributes[i] = attributes[i];
         glVertexAttribPointer(attributes[i].index, attributes[i].size, attributes[i].type, attributes[i].normalized, attributes[i].stride, attributes[i].pointer);
         glEnableVertexAttribArray(i);
     }
+    
 
     vertex_array_unbind(&VAO);
     buffer_unbind(&VBO);
@@ -255,17 +259,27 @@ void renderable_object_create(renderable_object *input, void *vertices, int vert
     input->ibo = IBO;
 }
 
+void renderable_object_print(renderable_object *input, const char* name){
+    printf("RENDERABLE_OBJECT: %s\n", name);
+    printf("vertex_data:\n");
+    vertex *vertex_data = (vertex*) input->vbo.data;
+    int vertices_count = input->vbo.length/sizeof(vertex);
+    print_vertices(vertex_data, vertices_count);
+
+    printf("index data:");
+    indices_print(input->ibo.data, input->ibo.indices_count);
+    
+}
 
 void renderable_object_draw(renderable_object *input){
     glUseProgram(input->shader->program);
     vertex_array_bind(&(input->vao));
-
-    //set texture slot if there is a texture
     if (input->texture != NULL){
         glBindTextureUnit(1, input->texture->id);// assign texture to slot 1
         buffer_update_text_id(&(input->vbo), 1.0f);
+    } else{
+        buffer_update_text_id(&(input->vbo), 0.0f);
     }
-    
 
     glDrawElements(GL_TRIANGLES, input->ibo.indices_count, GL_UNSIGNED_INT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -279,13 +293,92 @@ void renderable_object_delete(renderable_object *input){
     shader_delete(input->shader);
 }
 
+//renderer
+
+void renderer_inintalize(renderer *input){
+    vertex_array_create(&(input->vao));
+    vertex_array_bind(&(input->vao));
+
+    input->vertex_data_length = 0;
+    input->indices_count = 0;
+    for (int i = 0; i < 3; i++){
+        printf("object[%d] length = %d", i, input->objects[i].vbo.length);
+        input->vertex_data_length += input->objects[i].vbo.length;
+        input->indices_count += input->objects[i].ibo.indices_count;
+        if (input->objects[i].texture != NULL){
+            glBindTextureUnit(i+1, input->objects[i].texture->id);
+            buffer_update_text_id(&(input->objects[i].vbo), i+1);
+        } else{
+            buffer_update_text_id(&(input->objects[i].vbo), 0);
+        }
+    }
+    printf("total renderer vbo length = %d\n", input->vertex_data_length);
+    printf("total vbo vertices: %d\n", input->vertex_data_length/sizeof(vertex));
+    printf("total renderer ibo indices = %d\n", input->indices_count);
+
+    void *vertex_data = malloc(input->vertex_data_length);
+    void *index_data = malloc((input->indices_count) * sizeof(GLuint));
+    
+    GLuint *tmp_indices;
+    int vertex_offset = 0;
+    int index_offset = 0;
+    for (int i = 0; i < 3; i++){
+        //printf("all indices: ");
+        for (int j = 0; j < input->objects[i].ibo.indices_count; j++){
+            tmp_indices = (GLuint*)input->objects[i].ibo.data;
+            tmp_indices[j] += 4*i;
+            //printf("%u, ", tmp_indices[j]);
+        }
+        //printf("\n");
+        memcpy(vertex_data + vertex_offset, input->objects[i].vbo.data, input->objects[i].vbo.length);
+        memcpy(index_data + index_offset, tmp_indices, (input->objects[i].ibo.indices_count) * sizeof(GLuint));
+        vertex_offset += input->objects[i].vbo.length;
+        index_offset += (input->objects[i].ibo.indices_count) * sizeof(GLuint);
+    }
+
+
+    // print all the data before loading in buffer
+    vertex *printing_vertices = (vertex*)vertex_data;
+    int print_vertices_count = (input->vertex_data_length/sizeof(vertex));
+    print_vertices(printing_vertices, print_vertices_count);
+    indices_print(index_data, input->indices_count);
+    printf("vertex_data_length = %d\n", input->vertex_data_length);
+    printf("indices_count = %d\n", (input->indices_count) * sizeof(GLuint));
+
+    vertex_array_bind(&(input->vao));
+    buffer_create(&(input->vbo), GL_ARRAY_BUFFER, vertex_data, input->vertex_data_length);
+    buffer_create(&(input->ibo), GL_ELEMENT_ARRAY_BUFFER, index_data, (input->indices_count) * sizeof(GLuint));
+
+    
+    buffer_bind(&(input->vbo));
+    buffer_bind(&(input->ibo));
+    printf("=====attribute count : %d\n", input->objects[0].vao.attribute_count);
+    for (int i=0; i < input->objects[0].vao.attribute_count; i++){
+        glVertexAttribPointer(input->objects[0].vao.attributes[i].index, input->objects[0].vao.attributes[i].size, input->objects[0].vao.attributes[i].type,
+         input->objects[0].vao.attributes[i].normalized, input->objects[0].vao.attributes[i].stride, input->objects[0].vao.attributes[i].pointer);
+        glEnableVertexAttribArray(i);
+    }
+
+
+}
+
+
+void renderer_draw(renderer *input){    
+    vertex_array_bind(&(input->vao));
+    glUseProgram(input->objects[0].shader->program);
+    glDrawElements(GL_TRIANGLES, input->ibo.indices_count, GL_UNSIGNED_INT, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    vertex_array_unbind(&(input->vao));
+
+
+}
 
 
 
 
-
-//textures
-//TEXTURES
+//////////////////////////
+//////Textures////////////
+/////////////////////////
 
 void texture_load(texture *input, const char *path){
 
@@ -327,7 +420,9 @@ void texture_unbind(texture *input){
 }
 
 
-//colors
+//////////////////////////
+//////Colors////////////
+/////////////////////////
 
 void color_set(color* dest, float r, float g, float b, float a){
     dest->r = r;
@@ -336,11 +431,38 @@ void color_set(color* dest, float r, float g, float b, float a){
     dest->a = a;
 }
 
-//vertices setup
+//////////////////////////
+//////Vertices setup////////////
+/////////////////////////
+
+void indices_print(void *data, int indices_count){
+    GLuint *indices = (GLuint*) data;
+    printf("indices: \n");
+    for (int i = 0; i < indices_count; i++){
+        printf("%u, ", indices[i]);
+    }
+    printf("\n");
+}
 
 void vertex_set_texture_slot(vertex *vertex, int slot){
     vertex->text_index = slot;
 }
+
+void print_vertices(vertex *input, int count){
+    for (int i = 0; i < count; i++){
+        printf("===Vertex %d===\n", i);
+        print_vertex(&(input[i]));
+    }
+}
+
+void print_vertex(vertex *input){;
+    printf("Position: %f, %f\n", input->position[0], input->position[1]);
+    printf("texcoord: %f, %f\n", input->text_coords[0], input->text_coords[1]);
+    printf("texindex: %f\n", input->text_index);
+    printf("color: %f, %f, %f, %f\n", input->color[0], input->color[1], input->color[2], input->color[3]);
+    printf("\n");
+}
+
 
 void quad_set_texture_slot(quad *quad, float slot){
     quad->v0.text_index = slot;
