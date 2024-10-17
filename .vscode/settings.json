@@ -6,6 +6,7 @@
         "cglm.h": "c",
         "mat4.h": "c",
         "alut.h": "c",
-        "stb_image.h": "c"
+        "stb_image.h": "c",
+        "glew.h": "c"
     }
 }

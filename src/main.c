@@ -49,8 +49,8 @@ int main(){
     shader_create(&main_shader, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
     //shader_set_uniform_1i(&main_shader, "uniformTexture", 0);
     shader_set_uniform_mat4f(&main_shader, "uniformMVP", mvp);
-    int samplers[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    shader_set_uniform_1iv(&main_shader, "u_textures", 10, samplers);
+    int texture_slots[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    shader_set_uniform_1iv(&main_shader, "u_textures", 10, texture_slots);
     
 
     //create some colors
@@ -65,8 +65,6 @@ int main(){
     texture texture_body;
     texture_load(&texture_head, "assets/snek_head.png");
     texture_load(&texture_body, "assets/snek_body1.png");
-    //glBindTextureUnit(1, texture_head.id);
-    //glBindTextureUnit(2, texture_body.id);
     
 
     //Create quad vertex data
@@ -103,11 +101,10 @@ int main(){
     renderable_object_create(&square_blue, &quad_blue, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, NULL);
     //renderable_object_print(&square_red, "SQUARE RED");
 
-    renderer *game_renderer = malloc(sizeof(renderer));
-
-    game_renderer->objects[0] = square_red;
-    game_renderer->objects[1] = square_green;
-    game_renderer->objects[2] = square_blue;
+    renderer *game_renderer = calloc(1, sizeof(renderer));
+    renderer_attach_object(game_renderer, &square_red);
+    renderer_attach_object(game_renderer, &square_green);
+    renderer_attach_object(game_renderer, &square_blue);
     renderer_initialize(game_renderer);
     
 
@@ -136,8 +133,6 @@ int main(){
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
-    int test = scancode;
-    test = mods;
     if (action == GLFW_PRESS || action == GLFW_RELEASE) {
       if (action == GLFW_PRESS) {
           //move = 1;

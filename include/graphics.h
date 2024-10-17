@@ -68,9 +68,9 @@ typedef struct texture {
 } texture;
 
 typedef struct renderable_object {
-    vertex_array vao;
-    buffer vbo;
-    buffer ibo;
+    vertex_array *vao;
+    buffer *vbo;
+    buffer *ibo;
     shader *shader;
     texture *texture;
     mat4 model_matrix;
@@ -87,7 +87,7 @@ typedef struct color{
 typedef struct vertex{
     float position[2];
     float text_coords[2];
-    float text_index;
+    float text_slot;
     float color[4];
 } vertex;
 
@@ -97,10 +97,11 @@ typedef struct quad{
 
 
 typedef struct renderer{
-    renderable_object objects[3];
-    vertex_array vao;
-    buffer vbo;
-    buffer ibo;
+    renderable_object *objects;
+    int object_count;
+    vertex_array *vao;
+    buffer *vbo;
+    buffer *ibo;
 } renderer;
 
 
@@ -123,7 +124,7 @@ void buffer_create(buffer *input, GLenum type, void *data, size_t length);
 void buffer_bind(buffer *input);
 void buffer_unbind(buffer *input);
 void buffer_update(buffer *input);
-void buffer_update_text_id(buffer *input, float id);
+void buffer_update_text_slot(buffer *input, float id);
 void buffer_delete(buffer *input);
 
 //vertex arrays
@@ -141,6 +142,7 @@ void renderable_object_create(renderable_object *input, void *vertices, int vert
 void renderable_object_print(renderable_object *input, const char* name);
 
 //renderer
+void renderer_attach_object(renderer *input, renderable_object *object);
 void renderer_draw(renderer *input);
 void renderer_initialize(renderer *input);
 
