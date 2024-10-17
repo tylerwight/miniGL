@@ -108,7 +108,7 @@ int main(){
     renderer_attach_object(game_renderer, &square_blue);
     renderer_initialize(game_renderer);
     
-    //renderer_update_data(game_renderer);
+    renderer_update_data(game_renderer);
 
     
     
@@ -117,7 +117,8 @@ int main(){
     while (!glfwWindowShouldClose(window)){ // game loop
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
+        
+        renderer_update_data(game_renderer);
         // renderable_object_draw(&square_red);
         // renderable_object_draw(&square_green);
         // renderable_object_draw(&square_blue);
