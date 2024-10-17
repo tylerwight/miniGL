@@ -311,7 +311,6 @@ void renderer_inintalize(renderer *input){
     input->vertex_data_length = 0;
     input->indices_count = 0;
     for (int i = 0; i < 3; i++){
-        printf("sizeI = %d\n\n", i);
         input->vertex_data_length += input->objects[i].vbo.length;
         input->indices_count += input->objects[i].ibo.indices_count;
         if (input->objects[i].texture != NULL){
@@ -334,13 +333,11 @@ void renderer_inintalize(renderer *input){
     int vertex_offset = 0;
     int index_offset = 0;
     for (int i = 0; i < 3; i++){
-        printf("memcpyI = %d\n\n", i);
 
         GLuint *tmp_indices = malloc(input->objects[i].ibo.indices_count * sizeof(GLuint));
         memcpy(tmp_indices, input->objects[i].ibo.data, input->objects[i].ibo.indices_count * sizeof(GLuint));
 
         for (int j = 0; j < input->objects[i].ibo.indices_count; j++){
-            printf("J = %d\n\n", j);
             //tmp_indices = (GLuint*)input->objects[i].ibo.data;
             tmp_indices[j] += 4*i;
         }
@@ -350,14 +347,6 @@ void renderer_inintalize(renderer *input){
         index_offset += (input->objects[i].ibo.indices_count) * sizeof(GLuint);
         free(tmp_indices);
     }
-
-    vertex *printing_vertices = (vertex*)vertex_data;
-    int print_vertices_count = (input->vertex_data_length/sizeof(vertex));
-    print_vertices(printing_vertices, print_vertices_count);
-    indices_print(index_data, input->indices_count);
-    printf("vertex_data_length = %d\n", input->vertex_data_length);
-    printf("indices_count = %d\n", (input->indices_count) * sizeof(GLuint));
-
 
     // we now have all the data in vertex_data and index_data, creat a buffer and put it in the GPU
     vertex_array_bind(&(input->vao));
@@ -370,7 +359,6 @@ void renderer_inintalize(renderer *input){
     buffer_bind(&(input->ibo));
     //set attributes from just the first objects
     for (int i=0; i < input->objects[0].vao.attribute_count; i++){
-        printf("attr I = %d\n\n", i);
         GLCall(glVertexAttribPointer(input->objects[0].vao.attributes[i].index, input->objects[0].vao.attributes[i].size, input->objects[0].vao.attributes[i].type, input->objects[0].vao.attributes[i].normalized, input->objects[0].vao.attributes[i].stride, input->objects[0].vao.attributes[i].pointer));
         GLCall(glEnableVertexAttribArray(i));
     }
