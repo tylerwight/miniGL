@@ -5,6 +5,7 @@
         "stdlib.h": "c",
         "cglm.h": "c",
         "mat4.h": "c",
-        "alut.h": "c"
+        "alut.h": "c",
+        "stb_image.h": "c"
     }
 }

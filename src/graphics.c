@@ -3,6 +3,14 @@
 #include "stb_image.h"
 
 
+void GLAPIENTRY gl_debug_callback(GLenum source, GLenum type, GLuint id,
+                                  GLenum severity, GLsizei length,
+                                  const GLchar* message, const void* userParam) {
+    printf("GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+           (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+           type, severity, message);
+}
+
 //////////////////////////
 //////SHADERS////////////
 /////////////////////////
@@ -65,7 +73,7 @@ const char* shader_load_source(const char* file_path) {
         return NULL;
     }
 
-    fread(buffer, 1, length, file);
+    size_t tmp = fread(buffer, 1, length, file);
     buffer[length] = '\0';
 
     fclose(file);
@@ -108,7 +116,7 @@ void shader_create(shader *input, const char *vertex_path, const char *fragment_
 
 }
 
-shader_delete(shader *input){
+void shader_delete(shader *input){
     glDeleteProgram(input->program);
 }
 
@@ -117,7 +125,7 @@ shader_delete(shader *input){
 //////BUFFERS////////////
 /////////////////////////
 void buffer_create(buffer *input, GLenum type, void *data, size_t length){
-    glGenBuffers(1, &(input->id));
+    GLCall(glGenBuffers(1, &(input->id)));
 
     input->data = malloc(length);
     memcpy(input->data, data, length);
@@ -125,14 +133,14 @@ void buffer_create(buffer *input, GLenum type, void *data, size_t length){
     input->type = type;
     input->length = length;
     buffer_bind(input);
-    glBufferData(input->type, input->length, input->data, GL_DYNAMIC_DRAW);
+    GLCall(glBufferData(input->type, input->length, input->data, GL_DYNAMIC_DRAW));
     buffer_unbind(input);
 
 }
 
 void buffer_update(buffer *input){
     buffer_bind(input);
-    glBufferSubData(input->type, 0, input->length, input->data);
+    GLCall(glBufferSubData(input->type, 0, input->length, input->data));
     buffer_unbind(input);
 }
 
@@ -146,16 +154,16 @@ void buffer_update_text_id(buffer *input, float id){
         vertices[i].text_index = id;
     }
     
-    glBufferSubData(input->type, 0, input->length, vertices);
+    GLCall(glBufferSubData(input->type, 0, input->length, vertices));
     buffer_unbind(input);
 
 }
 
 void buffer_bind(buffer *input){
-    glBindBuffer(input->type, input->id);
+    GLCall(glBindBuffer(input->type, input->id));
 }
 void buffer_unbind(buffer *input){
-    glBindBuffer(input->type, 0);
+    GLCall(glBindBuffer(input->type, 0));
 }
 
 void buffer_delete(buffer *input){
@@ -172,14 +180,14 @@ void buffer_delete(buffer *input){
 
 
 void vertex_array_create(vertex_array *input){
-    glGenVertexArrays(1, &(input->id));
+    GLCall(glGenVertexArrays(1, &(input->id)));
     input->attribute_count = 0;
 }
 
 void vertex_array_bind(vertex_array *input){
-    glBindVertexArray(input->id);
+    GLCall(glBindVertexArray(input->id));
 }
-void vertex_array_unbind(vertex_array *input){
+void vertex_array_unbind(){
     glBindVertexArray(0);
 }
 
@@ -246,8 +254,8 @@ void renderable_object_create(renderable_object *input, void *vertices, int vert
     VAO.attribute_count = attribute_count;
     for (int i=0; i < attribute_count; i++){
         VAO.attributes[i] = attributes[i];
-        glVertexAttribPointer(attributes[i].index, attributes[i].size, attributes[i].type, attributes[i].normalized, attributes[i].stride, attributes[i].pointer);
-        glEnableVertexAttribArray(i);
+        GLCall(glVertexAttribPointer(attributes[i].index, attributes[i].size, attributes[i].type, attributes[i].normalized, attributes[i].stride, attributes[i].pointer));
+        GLCall(glEnableVertexAttribArray(i));
     }
     
 
@@ -296,7 +304,6 @@ void renderable_object_delete(renderable_object *input){
 //renderer
 
 void renderer_inintalize(renderer *input){
-    printf("test");
     vertex_array_create(&(input->vao));
     vertex_array_bind(&(input->vao));
 
@@ -304,7 +311,7 @@ void renderer_inintalize(renderer *input){
     input->vertex_data_length = 0;
     input->indices_count = 0;
     for (int i = 0; i < 3; i++){
-        printf("object[%d] length = %d", i, input->objects[i].vbo.length);
+        printf("sizeI = %d\n\n", i);
         input->vertex_data_length += input->objects[i].vbo.length;
         input->indices_count += input->objects[i].ibo.indices_count;
         if (input->objects[i].texture != NULL){
@@ -314,34 +321,36 @@ void renderer_inintalize(renderer *input){
             buffer_update_text_id(&(input->objects[i].vbo), 0);
         }
     }
-    printf("total renderer vbo length = %d\n", input->vertex_data_length);
-    printf("total vbo vertices: %d\n", input->vertex_data_length/sizeof(vertex));
-    printf("total renderer ibo indices = %d\n", input->indices_count);
 
     // use that size to malloc enough space to hold them
     void *vertex_data = malloc(input->vertex_data_length);
     void *index_data = malloc((input->indices_count) * sizeof(GLuint));
+    if (vertex_data == NULL || index_data == NULL) {
+        printf("falled to allocate vert or index data\n");
+    }
     
     //populate the vertex and index data from every renderable object in the renderer
-    GLuint *tmp_indices;
+    
     int vertex_offset = 0;
     int index_offset = 0;
     for (int i = 0; i < 3; i++){
-        //printf("all indices: ");
+        printf("memcpyI = %d\n\n", i);
+
+        GLuint *tmp_indices = malloc(input->objects[i].ibo.indices_count * sizeof(GLuint));
+        memcpy(tmp_indices, input->objects[i].ibo.data, input->objects[i].ibo.indices_count * sizeof(GLuint));
+
         for (int j = 0; j < input->objects[i].ibo.indices_count; j++){
-            tmp_indices = (GLuint*)input->objects[i].ibo.data;
+            printf("J = %d\n\n", j);
+            //tmp_indices = (GLuint*)input->objects[i].ibo.data;
             tmp_indices[j] += 4*i;
-            //printf("%u, ", tmp_indices[j]);
         }
-        //printf("\n");
-        memcpy(vertex_data + vertex_offset, input->objects[i].vbo.data, input->objects[i].vbo.length);
-        memcpy(index_data + index_offset, tmp_indices, (input->objects[i].ibo.indices_count) * sizeof(GLuint));
+        memcpy((char *)vertex_data + vertex_offset, input->objects[i].vbo.data, input->objects[i].vbo.length);
+        memcpy((char *)index_data + index_offset, tmp_indices, (input->objects[i].ibo.indices_count) * sizeof(GLuint));
         vertex_offset += input->objects[i].vbo.length;
         index_offset += (input->objects[i].ibo.indices_count) * sizeof(GLuint);
+        free(tmp_indices);
     }
 
-
-    
     vertex *printing_vertices = (vertex*)vertex_data;
     int print_vertices_count = (input->vertex_data_length/sizeof(vertex));
     print_vertices(printing_vertices, print_vertices_count);
@@ -349,18 +358,21 @@ void renderer_inintalize(renderer *input){
     printf("vertex_data_length = %d\n", input->vertex_data_length);
     printf("indices_count = %d\n", (input->indices_count) * sizeof(GLuint));
 
+
     // we now have all the data in vertex_data and index_data, creat a buffer and put it in the GPU
     vertex_array_bind(&(input->vao));
     buffer_create(&(input->vbo), GL_ARRAY_BUFFER, vertex_data, input->vertex_data_length);
     buffer_create(&(input->ibo), GL_ELEMENT_ARRAY_BUFFER, index_data, (input->indices_count) * sizeof(GLuint));
+    input->ibo.indices_count = input->indices_count;
 
     
     buffer_bind(&(input->vbo));
     buffer_bind(&(input->ibo));
     //set attributes from just the first objects
     for (int i=0; i < input->objects[0].vao.attribute_count; i++){
-        glVertexAttribPointer(input->objects[0].vao.attributes[i].index, input->objects[0].vao.attributes[i].size, input->objects[0].vao.attributes[i].type, input->objects[0].vao.attributes[i].normalized, input->objects[0].vao.attributes[i].stride, input->objects[0].vao.attributes[i].pointer);
-        glEnableVertexAttribArray(i);
+        printf("attr I = %d\n\n", i);
+        GLCall(glVertexAttribPointer(input->objects[0].vao.attributes[i].index, input->objects[0].vao.attributes[i].size, input->objects[0].vao.attributes[i].type, input->objects[0].vao.attributes[i].normalized, input->objects[0].vao.attributes[i].stride, input->objects[0].vao.attributes[i].pointer));
+        GLCall(glEnableVertexAttribArray(i));
     }
 
 
@@ -370,7 +382,7 @@ void renderer_inintalize(renderer *input){
 void renderer_draw(renderer *input){    
     vertex_array_bind(&(input->vao));
     glUseProgram(input->objects[0].shader->program);
-    glDrawElements(GL_TRIANGLES, input->ibo.indices_count, GL_UNSIGNED_INT, 0);
+    GLCall(glDrawElements(GL_TRIANGLES, input->ibo.indices_count, GL_UNSIGNED_INT, 0));
     glBindTexture(GL_TEXTURE_2D, 0);
     vertex_array_unbind(&(input->vao));
 
@@ -399,7 +411,7 @@ void texture_load(texture *input, const char *path){
     unsigned char *data = stbi_load(path, &(input->width), &(input->height), &nrChannels, 0);
     if (data){
         GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, input->width, input->height, 0, format, GL_UNSIGNED_BYTE, data);
+        GLCall(glTexImage2D(GL_TEXTURE_2D, 0, format, input->width, input->height, 0, format, GL_UNSIGNED_BYTE, data));
         //glGenerateMipmap(GL_TEXTURE_2D);
         printf("Texture loaded successfully: %d x %d, channels: %d\n", input->width, input->height, nrChannels);
         input->data = data;
@@ -419,7 +431,7 @@ void texture_bind(texture *input, int slot){
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, input->id);
 }
-void texture_unbind(texture *input){
+void texture_unbind(){
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -563,4 +575,20 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         return window;
+}
+
+
+void GLClearError(){
+    while(glGetError() != GL_NO_ERROR);
+};
+
+
+bool GLLogCall(const char* function, const char* file, int line){
+    GLenum error;
+    while((error = glGetError())){
+        
+        printf("[OpenGL Error] (%d): %s, file: %s, line: %d\n", error, function, file, line);
+        return false;
+    }
+    return true;
 }

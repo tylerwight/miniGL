@@ -9,10 +9,18 @@
 #include <cglm/mat4.h> 
 #include <cglm/cam.h> 
 #include <cglm/affine.h>
+#include <signal.h>
 #include FT_FREETYPE_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define ASSERT(x) if (!(x)) raise(SIGTRAP);
+#define GLCall(x) GLClearError();\
+    x;\
+    ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+
+
 
 #define MAX_OBJECTS 1000
 #define MAX_VERTX_ATTRIBS 4
@@ -70,11 +78,6 @@ typedef struct renderable_object {
 } renderable_object;
 
 
-// typedef struct renderer {
-//     renderable_object objects[MAX_OBJECTS];
-//     int object_count;
-// } renderer;
-
 typedef struct color{
     float r;
     float g;
@@ -101,8 +104,6 @@ typedef struct renderer{
     int vertex_data_length;
     buffer ibo;
     int indices_count;
-    GLuint bound_textures[10];
-    int current_texture_slot;
 } renderer;
 
 
@@ -118,6 +119,7 @@ void shader_set_uniform_3f(shader *shader, const char *name, float one, float tw
 void shader_set_uniform_4f(shader *shader, const char *name, float one, float two, float three, float four);
 void shader_set_uniform_mat4f(shader *shader, const char *name, mat4 one);
 void shader_set_uniform_1iv(shader *shader, const char *name, int count , int array[]);
+void shader_delete(shader *input);
 
 //buffers
 void buffer_create(buffer *input, GLenum type, void *data, size_t length);
@@ -130,7 +132,7 @@ void buffer_delete(buffer *input);
 //vertex arrays
 void vertex_array_create(vertex_array *input);
 void vertex_array_bind(vertex_array *input);
-void vertex_array_unbind(vertex_array *input);
+void vertex_array_unbind();
 vertex_attrib_pointer vertex_array_attribute_create(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLvoid *pointer);
 void vertex_array_delete(vertex_array *input);
 
@@ -149,7 +151,7 @@ void renderer_inintalize(renderer *input);
 void texture_load(texture *input, const char *path);
 void texture_delete(texture *input);
 void texture_bind(texture *input, int slot);
-void texture_unbind(texture *input);
+void texture_unbind();
 
 //color
 void color_set(color* dest, float r, float g, float b, float a);
@@ -157,6 +159,9 @@ void color_set(color* dest, float r, float g, float b, float a);
 //vertices setup
 void print_vertex(vertex *input);
 void quad_create(quad *dest, float x, float y, int size, color color, float texture_id);
+void print_vertices(vertex *input, int count);
+
+void indices_print(void *data, int indices_count);
 
 //batching
 //void batch_add($)
@@ -165,5 +170,6 @@ void quad_create(quad *dest, float x, float y, int size, color color, float text
 
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
 
-
+bool GLLogCall(const char* function, const char* file, int line);
+void GLClearError();
 #endif

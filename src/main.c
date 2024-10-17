@@ -102,14 +102,13 @@ int main(){
     renderable_object_create(&square_green, &quad_green, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_head);
     renderable_object_create(&square_blue, &quad_blue, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, NULL);
     //renderable_object_print(&square_red, "SQUARE RED");
-    printf("attrib count (MAIN) %d\n", square_red.vao.attribute_count);
 
-    renderer renderer;
+    renderer *game_renderer = malloc(sizeof(renderer));
 
-    renderer.objects[0] = square_red;
-    renderer.objects[1] = square_green;
-    renderer.objects[2] = square_blue;
-    renderer_inintalize(&renderer);
+    game_renderer->objects[0] = square_red;
+    game_renderer->objects[1] = square_green;
+    game_renderer->objects[2] = square_blue;
+    renderer_inintalize(game_renderer);
     
 
     //main loop
@@ -120,7 +119,7 @@ int main(){
         // renderable_object_draw(&square_red);
         // renderable_object_draw(&square_green);
         // renderable_object_draw(&square_blue);
-        renderer_draw(&renderer);
+        renderer_draw(game_renderer);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -137,6 +136,8 @@ int main(){
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    int test = scancode;
+    test = mods;
     if (action == GLFW_PRESS || action == GLFW_RELEASE) {
       if (action == GLFW_PRESS) {
           //move = 1;
