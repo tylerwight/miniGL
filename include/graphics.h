@@ -126,6 +126,7 @@ void buffer_unbind(buffer *input);
 void buffer_update(buffer *input);
 void buffer_update_text_slot(buffer *input, float id);
 void buffer_delete(buffer *input);
+void buffer_set_data(buffer *input, void *data, size_t length);
 
 //vertex arrays
 void vertex_array_create(vertex_array *input);
@@ -142,9 +143,11 @@ void renderable_object_create(renderable_object *input, void *vertices, int vert
 void renderable_object_print(renderable_object *input, const char* name);
 
 //renderer
+void renderer_update_data(renderer *input);
 void renderer_attach_object(renderer *input, renderable_object *object);
-void renderer_draw(renderer *input);
 void renderer_initialize(renderer *input);
+void renderer_draw(renderer *input);
+
 
 //textures
 void texture_load(texture *input, const char *path);
@@ -171,4 +174,6 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
 
 bool GLLogCall(const char* function, const char* file, int line);
 void GLClearError();
+void APIENTRY gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
+                                GLsizei length, const GLchar *message, const void *userParam);
 #endif

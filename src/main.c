@@ -24,6 +24,7 @@ int main(){
     GLFWwindow* window;
     window = setup_opengl(1024,768, key_callback);
 
+
     //Model View Projection
     mat4 projection;
     glm_ortho(0.0f, 1024.0f, 0.0f, 768.0f, -1.0f, 1.0f, projection);
@@ -107,6 +108,10 @@ int main(){
     renderer_attach_object(game_renderer, &square_blue);
     renderer_initialize(game_renderer);
     
+    //renderer_update_data(game_renderer);
+
+    
+    
 
     //main loop
     while (!glfwWindowShouldClose(window)){ // game loop
@@ -116,6 +121,8 @@ int main(){
         // renderable_object_draw(&square_red);
         // renderable_object_draw(&square_green);
         // renderable_object_draw(&square_blue);
+        // buffer_update(game_renderer->vbo);
+        //buffer_update(game_renderer->ibo);
         renderer_draw(game_renderer);
 
         glfwSwapBuffers(window);
