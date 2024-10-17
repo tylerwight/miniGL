@@ -358,8 +358,7 @@ void renderer_inintalize(renderer *input){
     buffer_bind(&(input->ibo));
     //set attributes from just the first objects
     for (int i=0; i < input->objects[0].vao.attribute_count; i++){
-        glVertexAttribPointer(input->objects[0].vao.attributes[i].index, input->objects[0].vao.attributes[i].size, input->objects[0].vao.attributes[i].type,
-         input->objects[0].vao.attributes[i].normalized, input->objects[0].vao.attributes[i].stride, input->objects[0].vao.attributes[i].pointer);
+        glVertexAttribPointer(input->objects[0].vao.attributes[i].index, input->objects[0].vao.attributes[i].size, input->objects[0].vao.attributes[i].type, input->objects[0].vao.attributes[i].normalized, input->objects[0].vao.attributes[i].stride, input->objects[0].vao.attributes[i].pointer);
         glEnableVertexAttribArray(i);
     }
 

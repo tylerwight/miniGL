@@ -52,3 +52,9 @@ clean:
 
 # Rebuild the project
 rebuild: clean all
+
+
+CFLAGS_DEBUG = $(CFLAGS) -g
+
+debug: clean
+	$(MAKE) CFLAGS="$(CFLAGS_DEBUG)" all
