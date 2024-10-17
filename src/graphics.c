@@ -296,6 +296,7 @@ void renderable_object_delete(renderable_object *input){
 //renderer
 
 void renderer_inintalize(renderer *input){
+    printf("test");
     vertex_array_create(&(input->vao));
     vertex_array_bind(&(input->vao));
 

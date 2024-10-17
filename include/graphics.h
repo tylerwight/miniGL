@@ -15,7 +15,7 @@
 #include <string.h>
 
 #define MAX_OBJECTS 1000
-#define MAX_VERTX_ATTRIBS 10
+#define MAX_VERTX_ATTRIBS 4
 
 
 
@@ -29,7 +29,6 @@ typedef struct shader {
 typedef struct buffer {
     GLuint id;
     GLenum type;
-    GLsizeiptr size;
     void* data;
     size_t length;
     int indices_count;
@@ -68,7 +67,6 @@ typedef struct renderable_object {
     shader *shader;
     texture *texture;
     mat4 model_matrix;
-    GLsizei index_count;
 } renderable_object;
 
 
