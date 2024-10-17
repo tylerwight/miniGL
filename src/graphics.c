@@ -305,7 +305,7 @@ void renderable_object_delete(renderable_object *input){
 
 //renderer
 
-void renderer_inintalize(renderer *input){
+void renderer_initialize(renderer *input){
     vertex_array_create(&(input->vao));
     vertex_array_bind(&(input->vao));
 

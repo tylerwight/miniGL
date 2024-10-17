@@ -108,7 +108,7 @@ int main(){
     game_renderer->objects[0] = square_red;
     game_renderer->objects[1] = square_green;
     game_renderer->objects[2] = square_blue;
-    renderer_inintalize(game_renderer);
+    renderer_initialize(game_renderer);
     
 
     //main loop

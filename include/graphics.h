@@ -142,7 +142,7 @@ void renderable_object_print(renderable_object *input, const char* name);
 
 //renderer
 void renderer_draw(renderer *input);
-void renderer_inintalize(renderer *input);
+void renderer_initialize(renderer *input);
 
 //textures
 void texture_load(texture *input, const char *path);
