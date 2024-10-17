@@ -39,7 +39,6 @@ typedef struct buffer {
     GLenum type;
     void* data;
     size_t length;
-    //int indices_count;
 } buffer;
 
 typedef struct vertex_attrib_pointer{
@@ -101,9 +100,7 @@ typedef struct renderer{
     renderable_object objects[3];
     vertex_array vao;
     buffer vbo;
-    //int vertex_data_length;
     buffer ibo;
-    //int indices_count;
 } renderer;
 
 
