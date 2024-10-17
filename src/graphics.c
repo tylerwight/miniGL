@@ -311,6 +311,10 @@ void renderable_object_delete(renderable_object *input){
     shader_delete(input->shader);
 }
 
+void renderable_object_update_vertices(renderable_object *input, void *data, int vertices_count){
+    buffer_set_data(input->vbo, data, sizeof(vertex) * vertices_count);
+}
+
 
 
 //////////////////////////
@@ -437,88 +441,6 @@ void renderer_initialize(renderer *input){
 }
 
 
-
-// void renderer_initialize(renderer *input){
-//     if (input->object_count == 0){
-//         printf("No renderable objects attached to renderer\n");
-//         return;
-//     }
-//     vertex_array *VAO = malloc(sizeof(vertex_array));
-//     buffer *VBO = malloc(sizeof(buffer));
-//     buffer *IBO = malloc(sizeof(buffer));
-//     input->vao = VAO;
-//     input->vbo = VBO;
-//     input->ibo = IBO;
-
-//     vertex_array_create((input->vao));
-//     vertex_array_bind((input->vao));
-
-//     //get sizee of all ther vertex and index data, also update the buffer texture slots
-//     int vertex_data_length = 0;
-//     int index_data_length = 0;
-
-//     for (int i = 0; i < input->object_count; i++){
-//         vertex_data_length += input->objects[i].vbo->length;
-//         index_data_length += input->objects[i].ibo->length;
-
-//         if (input->objects[i].texture != NULL){
-//             int slot = i+1;
-//             glBindTextureUnit(slot, input->objects[i].texture->id);
-//             buffer_update_text_slot((input->objects[i].vbo), slot);
-//         } else{
-//             buffer_update_text_slot((input->objects[i].vbo), 0);
-//         }
-
-//     }
-
-//     // use that size to malloc enough space to hold them
-//     void *vertex_data = malloc(vertex_data_length);
-//     void *index_data = malloc(index_data_length);
-//     if (vertex_data == NULL || index_data == NULL) {
-//         printf("falled to allocate vert or index data\n");
-//     }
-    
-//     //populate the vertex and index data from every renderable object in the renderer
-//     int vertex_offset = 0;
-//     int index_offset = 0;
-//     for (int i = 0; i < input->object_count; i++){
-
-//         GLuint *tmp_indices = malloc(input->objects[i].ibo->length);
-//         memcpy(tmp_indices, input->objects[i].ibo->data, input->objects[i].ibo->length);
-
-//         for (unsigned int j = 0; j < (input->objects[i].ibo->length / sizeof(GLuint)); j++){
-//             tmp_indices[j] += 4*i;
-//         }
-
-//         memcpy((char *)vertex_data + vertex_offset, input->objects[i].vbo->data, input->objects[i].vbo->length);
-//         memcpy((char *)index_data + index_offset, tmp_indices, input->objects[i].ibo->length);
-//         vertex_offset += input->objects[i].vbo->length;
-//         index_offset += input->objects[i].ibo->length;
-
-//         free(tmp_indices);
-//     }
-
-//     // we now have all the data in vertex_data and index_data, creat a buffer and put it in the GPU
-//     vertex_array_bind((input->vao));
-//     buffer_create((input->vbo), GL_ARRAY_BUFFER, vertex_data, vertex_data_length);
-//     buffer_create((input->ibo), GL_ELEMENT_ARRAY_BUFFER, index_data, index_data_length);
-//     //input->ibo.indices_count = input->indices_count;
-
-    
-//     buffer_bind((input->vbo));
-//     buffer_bind((input->ibo));
-//     //set attributes from just the first objects
-//     vertex_attrib_pointer *tmp_attributes = &(input->objects[0].vao->attributes);
-//     int tmp_attribute_count = input->objects[0].vao->attribute_count;
-    
-//     for (int i=0; i < tmp_attribute_count; i++){
-//         GLCall(glVertexAttribPointer(tmp_attributes[i].index, tmp_attributes[i].size, tmp_attributes[i].type, tmp_attributes[i].normalized, tmp_attributes[i].stride, tmp_attributes[i].pointer));
-//         GLCall(glEnableVertexAttribArray(i));
-//     }
-
-//     free(vertex_data);
-//     free(index_data);
-// }
 
 void renderer_draw(renderer *input){   
     vertex_array_bind((input->vao));

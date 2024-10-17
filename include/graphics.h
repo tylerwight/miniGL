@@ -141,6 +141,7 @@ void renderable_object_draw(renderable_object *input);
 void renderable_object_delete(renderable_object *input);
 void renderable_object_create(renderable_object *input, void *vertices, int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture);
 void renderable_object_print(renderable_object *input, const char* name);
+void renderable_object_update_vertices(renderable_object *input, void *data, int vertices_count);
 
 //renderer
 void renderer_update_data(renderer *input);

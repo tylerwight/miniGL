@@ -17,6 +17,7 @@
 //#include "game.h"
 
 
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 
@@ -112,19 +113,43 @@ int main(){
 
     
     
+    double previousTime = glfwGetTime();
+    int frameCount = 0;
 
     //main loop
     while (!glfwWindowShouldClose(window)){ // game loop
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        
-        renderer_update_data(game_renderer);
-        // renderable_object_draw(&square_red);
-        // renderable_object_draw(&square_green);
-        // renderable_object_draw(&square_blue);
-        // buffer_update(game_renderer->vbo);
-        //buffer_update(game_renderer->ibo);
-        renderer_draw(game_renderer);
+        // quad_red.v0.position[0] += 0.1;
+        // quad_red.v0.position[1] += 0.1;
+        // quad_red.v1.position[0] += 0.1;
+        // quad_red.v1.position[1] += 0.1;
+        // quad_red.v2.position[0] += 0.1;
+        // quad_red.v2.position[1] += 0.1;
+        // quad_red.v3.position[0] += 0.1;
+        // quad_red.v3.position[1] += 0.1;
+        //renderable_object_update_vertices(&square_red, &quad_red, 4);
+        //renderer_update_data(game_renderer);
+        //renderer_draw(game_renderer);
+        renderable_object_draw(&square_red);
+
+
+        double currentTime = glfwGetTime();
+        frameCount++;
+
+        if (currentTime - previousTime >= 1.0) {
+            // Calculate FPS
+            int fps = frameCount;
+
+            // Create a new title string with the FPS
+            char title[256];
+            snprintf(title, sizeof(title), "My Game - [FPS: %d]", fps);
+            glfwSetWindowTitle(window, title);
+
+            // Reset frame count and previous time
+            frameCount = 0;
+            previousTime = currentTime;
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
