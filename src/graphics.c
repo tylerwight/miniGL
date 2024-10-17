@@ -322,7 +322,7 @@ void renderer_inintalize(renderer *input){
     void *index_data = malloc((input->indices_count) * sizeof(GLuint));
     
     //populate the vertex and index data from every renderable object in the renderer
-    GLuint *tmp_indices;
+    GLuint *tmp_indices = malloc((input->indices_count) * sizeof(GLuint));
     int vertex_offset = 0;
     int index_offset = 0;
     for (int i = 0; i < 3; i++){
