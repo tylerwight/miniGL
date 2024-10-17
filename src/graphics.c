@@ -299,10 +299,11 @@ void renderer_inintalize(renderer *input){
     vertex_array_create(&(input->vao));
     vertex_array_bind(&(input->vao));
 
+    //get sizee of all ther vertex and index data, also update the buffer texture slots
     input->vertex_data_length = 0;
     input->indices_count = 0;
     for (int i = 0; i < 3; i++){
-        printf("object[%d] length = %d", i, input->objects[i].vbo.length);
+        //printf("object[%d] length = %d", i, input->objects[i].vbo.length);
         input->vertex_data_length += input->objects[i].vbo.length;
         input->indices_count += input->objects[i].ibo.indices_count;
         if (input->objects[i].texture != NULL){
@@ -312,13 +313,15 @@ void renderer_inintalize(renderer *input){
             buffer_update_text_id(&(input->objects[i].vbo), 0);
         }
     }
-    printf("total renderer vbo length = %d\n", input->vertex_data_length);
-    printf("total vbo vertices: %d\n", input->vertex_data_length/sizeof(vertex));
-    printf("total renderer ibo indices = %d\n", input->indices_count);
+    // printf("total renderer vbo length = %d\n", input->vertex_data_length);
+    // printf("total vbo vertices: %d\n", input->vertex_data_length/sizeof(vertex));
+    // printf("total renderer ibo indices = %d\n", input->indices_count);
 
+    // use that size to malloc enough space to hold them
     void *vertex_data = malloc(input->vertex_data_length);
     void *index_data = malloc((input->indices_count) * sizeof(GLuint));
     
+    //populate the vertex and index data from every renderable object in the renderer
     GLuint *tmp_indices;
     int vertex_offset = 0;
     int index_offset = 0;
@@ -337,14 +340,15 @@ void renderer_inintalize(renderer *input){
     }
 
 
-    // print all the data before loading in buffer
-    vertex *printing_vertices = (vertex*)vertex_data;
-    int print_vertices_count = (input->vertex_data_length/sizeof(vertex));
-    print_vertices(printing_vertices, print_vertices_count);
-    indices_print(index_data, input->indices_count);
-    printf("vertex_data_length = %d\n", input->vertex_data_length);
-    printf("indices_count = %d\n", (input->indices_count) * sizeof(GLuint));
+    
+    // vertex *printing_vertices = (vertex*)vertex_data;
+    // int print_vertices_count = (input->vertex_data_length/sizeof(vertex));
+    // // print_vertices(printing_vertices, print_vertices_count);
+    // // indices_print(index_data, input->indices_count);
+    // // printf("vertex_data_length = %d\n", input->vertex_data_length);
+    // // printf("indices_count = %d\n", (input->indices_count) * sizeof(GLuint));
 
+    // we now have all the data in vertex_data and index_data, creat a buffer and put it in the GPU
     vertex_array_bind(&(input->vao));
     buffer_create(&(input->vbo), GL_ARRAY_BUFFER, vertex_data, input->vertex_data_length);
     buffer_create(&(input->ibo), GL_ELEMENT_ARRAY_BUFFER, index_data, (input->indices_count) * sizeof(GLuint));
@@ -352,7 +356,7 @@ void renderer_inintalize(renderer *input){
     
     buffer_bind(&(input->vbo));
     buffer_bind(&(input->ibo));
-    printf("=====attribute count : %d\n", input->objects[0].vao.attribute_count);
+    //set attributes from just the first objects
     for (int i=0; i < input->objects[0].vao.attribute_count; i++){
         glVertexAttribPointer(input->objects[0].vao.attributes[i].index, input->objects[0].vao.attributes[i].size, input->objects[0].vao.attributes[i].type,
          input->objects[0].vao.attributes[i].normalized, input->objects[0].vao.attributes[i].stride, input->objects[0].vao.attributes[i].pointer);

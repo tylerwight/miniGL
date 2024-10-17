@@ -96,16 +96,11 @@ int main(){
     attributes[2] = vertex_array_attribute_create(2, 1, GL_FLOAT, GL_FALSE, stride*sizeof(float), (void*)(4*sizeof(float)));  // texture index
     attributes[3] = vertex_array_attribute_create(3, 4, GL_FLOAT, GL_FALSE, stride*sizeof(float), (void*)(5*sizeof(float)));  // color
     
-
-
-
-
-
     // create the object
     renderable_object square_red, square_green, square_blue;
     renderable_object_create(&square_red, &quad_red, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, NULL);
     renderable_object_create(&square_green, &quad_green, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_head);
-    renderable_object_create(&square_blue, &quad_blue, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_body);
+    renderable_object_create(&square_blue, &quad_blue, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, NULL);
     //renderable_object_print(&square_red, "SQUARE RED");
     printf("attrib count (MAIN) %d\n", square_red.vao.attribute_count);
 
