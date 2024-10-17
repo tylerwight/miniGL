@@ -39,7 +39,7 @@ typedef struct buffer {
     GLenum type;
     void* data;
     size_t length;
-    int indices_count;
+    //int indices_count;
 } buffer;
 
 typedef struct vertex_attrib_pointer{
@@ -101,9 +101,9 @@ typedef struct renderer{
     renderable_object objects[3];
     vertex_array vao;
     buffer vbo;
-    int vertex_data_length;
+    //int vertex_data_length;
     buffer ibo;
-    int indices_count;
+    //int indices_count;
 } renderer;
 
 
@@ -157,9 +157,9 @@ void texture_unbind();
 void color_set(color* dest, float r, float g, float b, float a);
 
 //vertices setup
-void print_vertex(vertex *input);
+void vertex_print(vertex *input);
 void quad_create(quad *dest, float x, float y, int size, color color, float texture_id);
-void print_vertices(vertex *input, int count);
+void vertices_print(vertex *input, int count);
 
 void indices_print(void *data, int indices_count);
 

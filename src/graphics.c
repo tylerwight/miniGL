@@ -82,31 +82,31 @@ const char* shader_load_source(const char* file_path) {
 
 void shader_set_uniform_1i(shader *shader, const char *name, int one){
     int tmp = glGetUniformLocation(shader->program, name);
-    glUseProgram(shader->program);
-    glUniform1i(tmp, one);
+    GLCall(glUseProgram(shader->program));
+    GLCall(glUniform1i(tmp, one));
 }
 
 void shader_set_uniform_3f(shader *shader, const char *name, float one, float two, float three){
     int tmp = glGetUniformLocation(shader->program, name);
-    glUseProgram(shader->program);
-    glUniform3f(tmp, one, two, three);
+    GLCall(glUseProgram(shader->program));
+    GLCall(glUniform3f(tmp, one, two, three));
 }
 
 void shader_set_uniform_4f(shader *shader, const char *name, float one, float two, float three, float four){
     int tmp = glGetUniformLocation(shader->program, name);
-    glUseProgram(shader->program);
-    glUniform4f(tmp, one, two, three, four);
+    GLCall(glUseProgram(shader->program));
+    GLCall(glUniform4f(tmp, one, two, three, four));
 }
 void shader_set_uniform_mat4f(shader *shader, const char *name, mat4 one){
     int tmp = glGetUniformLocation(shader->program, name);
-    glUseProgram(shader->program);
-    glUniformMatrix4fv(tmp, 1, GL_FALSE, &one[0][0]);
+    GLCall(glUseProgram(shader->program));
+    GLCall(glUniformMatrix4fv(tmp, 1, GL_FALSE, &one[0][0]));
 }
 
 void shader_set_uniform_1iv(shader *shader, const char *name, int count , int array[]){
     int tmp = glGetUniformLocation(shader->program, name);
-    glUseProgram(shader->program);
-    glUniform1iv(tmp, count, array);
+    GLCall(glUseProgram(shader->program));
+    GLCall(glUniform1iv(tmp, count, array));
 }
 
 void shader_create(shader *input, const char *vertex_path, const char *fragment_path){
@@ -117,7 +117,7 @@ void shader_create(shader *input, const char *vertex_path, const char *fragment_
 }
 
 void shader_delete(shader *input){
-    glDeleteProgram(input->program);
+    GLCall(glDeleteProgram(input->program));
 }
 
 
@@ -188,11 +188,11 @@ void vertex_array_bind(vertex_array *input){
     GLCall(glBindVertexArray(input->id));
 }
 void vertex_array_unbind(){
-    glBindVertexArray(0);
+    GLCall(glBindVertexArray(0));
 }
 
 void vertex_array_delete(vertex_array *input){
-    glDeleteVertexArrays(1, &(input->id));
+    GLCall(glDeleteVertexArrays(1, &(input->id)));
 }
 
 vertex_attrib_pointer vertex_array_attribute_create(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLvoid *pointer){
@@ -222,8 +222,8 @@ void renderable_object_link(renderable_object *input, vertex_array *vao, buffer 
     buffer_bind(vbo);
     buffer_bind(ibo);
     for (int i = 0; i < vao->attribute_count; i++){
-        glVertexAttribPointer(i, vao->attributes[i].size, vao->attributes[i].type, vao->attributes[i].normalized, vao->attributes[i].stride, vao->attributes[i].pointer);
-        glEnableVertexAttribArray(i);
+        GLCall(glVertexAttribPointer(i, vao->attributes[i].size, vao->attributes[i].type, vao->attributes[i].normalized, vao->attributes[i].stride, vao->attributes[i].pointer));
+        GLCall(glEnableVertexAttribArray(i));
     }
 
     vertex_array_unbind(vao);
@@ -245,7 +245,7 @@ void renderable_object_create(renderable_object *input, void *vertices, int vert
     vertex_array_create(&VAO);
     buffer_create(&VBO, GL_ARRAY_BUFFER, vertices, vertices_count * sizeof(vertex));
     buffer_create(&IBO, GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(GLuint) * indices_count);
-    IBO.indices_count = indices_count;
+    //IBO.indices_count = indices_count;
 
     vertex_array_bind(&VAO);
     buffer_bind(&VBO);
@@ -272,10 +272,12 @@ void renderable_object_print(renderable_object *input, const char* name){
     printf("vertex_data:\n");
     vertex *vertex_data = (vertex*) input->vbo.data;
     int vertices_count = input->vbo.length/sizeof(vertex);
-    print_vertices(vertex_data, vertices_count);
+    vertices_print(vertex_data, vertices_count);
 
+    GLuint *index_data = (GLuint*) input->ibo.data;
+    int indices_count = input->ibo.length/sizeof(GLuint);
     printf("index data:");
-    indices_print(input->ibo.data, input->ibo.indices_count);
+    indices_print(input->ibo.data, indices_count);
     
 }
 
@@ -288,8 +290,8 @@ void renderable_object_draw(renderable_object *input){
     } else{
         buffer_update_text_id(&(input->vbo), 0.0f);
     }
-
-    glDrawElements(GL_TRIANGLES, input->ibo.indices_count, GL_UNSIGNED_INT, 0);
+    int indices_count = input->ibo.length/sizeof(GLuint);
+    glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     vertex_array_unbind(&(input->vao));
 }
@@ -308,51 +310,54 @@ void renderer_inintalize(renderer *input){
     vertex_array_bind(&(input->vao));
 
     //get sizee of all ther vertex and index data, also update the buffer texture slots
-    input->vertex_data_length = 0;
-    input->indices_count = 0;
+    int vertex_data_length = 0;
+    int index_data_length = 0;
+
     for (int i = 0; i < 3; i++){
-        input->vertex_data_length += input->objects[i].vbo.length;
-        input->indices_count += input->objects[i].ibo.indices_count;
+        vertex_data_length += input->objects[i].vbo.length;
+        index_data_length += input->objects[i].ibo.length;
+
         if (input->objects[i].texture != NULL){
             glBindTextureUnit(i+1, input->objects[i].texture->id);
             buffer_update_text_id(&(input->objects[i].vbo), i+1);
         } else{
             buffer_update_text_id(&(input->objects[i].vbo), 0);
         }
+
     }
 
     // use that size to malloc enough space to hold them
-    void *vertex_data = malloc(input->vertex_data_length);
-    void *index_data = malloc((input->indices_count) * sizeof(GLuint));
+    void *vertex_data = malloc(vertex_data_length);
+    void *index_data = malloc(index_data_length);
     if (vertex_data == NULL || index_data == NULL) {
         printf("falled to allocate vert or index data\n");
     }
     
     //populate the vertex and index data from every renderable object in the renderer
-    
     int vertex_offset = 0;
     int index_offset = 0;
     for (int i = 0; i < 3; i++){
 
-        GLuint *tmp_indices = malloc(input->objects[i].ibo.indices_count * sizeof(GLuint));
-        memcpy(tmp_indices, input->objects[i].ibo.data, input->objects[i].ibo.indices_count * sizeof(GLuint));
+        GLuint *tmp_indices = malloc(input->objects[i].ibo.length);
+        memcpy(tmp_indices, input->objects[i].ibo.data, input->objects[i].ibo.length);
 
-        for (int j = 0; j < input->objects[i].ibo.indices_count; j++){
-            //tmp_indices = (GLuint*)input->objects[i].ibo.data;
+        for (int j = 0; j < (input->objects[i].ibo.length / sizeof(GLuint)); j++){
             tmp_indices[j] += 4*i;
         }
+
         memcpy((char *)vertex_data + vertex_offset, input->objects[i].vbo.data, input->objects[i].vbo.length);
-        memcpy((char *)index_data + index_offset, tmp_indices, (input->objects[i].ibo.indices_count) * sizeof(GLuint));
+        memcpy((char *)index_data + index_offset, tmp_indices, input->objects[i].ibo.length);
         vertex_offset += input->objects[i].vbo.length;
-        index_offset += (input->objects[i].ibo.indices_count) * sizeof(GLuint);
+        index_offset += input->objects[i].ibo.length;
+
         free(tmp_indices);
     }
 
     // we now have all the data in vertex_data and index_data, creat a buffer and put it in the GPU
     vertex_array_bind(&(input->vao));
-    buffer_create(&(input->vbo), GL_ARRAY_BUFFER, vertex_data, input->vertex_data_length);
-    buffer_create(&(input->ibo), GL_ELEMENT_ARRAY_BUFFER, index_data, (input->indices_count) * sizeof(GLuint));
-    input->ibo.indices_count = input->indices_count;
+    buffer_create(&(input->vbo), GL_ARRAY_BUFFER, vertex_data, vertex_data_length);
+    buffer_create(&(input->ibo), GL_ELEMENT_ARRAY_BUFFER, index_data, index_data_length);
+    //input->ibo.indices_count = input->indices_count;
 
     
     buffer_bind(&(input->vbo));
@@ -370,7 +375,7 @@ void renderer_inintalize(renderer *input){
 void renderer_draw(renderer *input){    
     vertex_array_bind(&(input->vao));
     glUseProgram(input->objects[0].shader->program);
-    GLCall(glDrawElements(GL_TRIANGLES, input->ibo.indices_count, GL_UNSIGNED_INT, 0));
+    GLCall(glDrawElements(GL_TRIANGLES, input->ibo.length/sizeof(GLuint), GL_UNSIGNED_INT, 0));
     glBindTexture(GL_TEXTURE_2D, 0);
     vertex_array_unbind(&(input->vao));
 
@@ -387,13 +392,13 @@ void renderer_draw(renderer *input){
 void texture_load(texture *input, const char *path){
 
     //glGenTextures(1, &(input->id));
-    glCreateTextures(GL_TEXTURE_2D, 1, &(input->id));
-    glBindTexture(GL_TEXTURE_2D, input->id);
+    GLCall(glCreateTextures(GL_TEXTURE_2D, 1, &(input->id)));
+    GLCall(glBindTexture(GL_TEXTURE_2D, input->id));
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));    
+    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
     int nrChannels;
     unsigned char *data = stbi_load(path, &(input->width), &(input->height), &nrChannels, 0);
@@ -407,20 +412,20 @@ void texture_load(texture *input, const char *path){
     }else{
         printf("Failed to load texture\n");
     }
-    glBindTexture(GL_TEXTURE_2D, 0);
+    GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
 
 void texture_delete(texture *input){
-    glDeleteTextures(1, &(input->id));
+    GLCall(glDeleteTextures(1, &(input->id)));
 }
 
 void texture_bind(texture *input, int slot){
-    glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_2D, input->id);
+    GLCall(glActiveTexture(GL_TEXTURE0 + slot));
+    GLCall(glBindTexture(GL_TEXTURE_2D, input->id));
 }
 void texture_unbind(){
-    glBindTexture(GL_TEXTURE_2D, 0);
+    GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
 
@@ -452,14 +457,14 @@ void vertex_set_texture_slot(vertex *vertex, int slot){
     vertex->text_index = slot;
 }
 
-void print_vertices(vertex *input, int count){
+void vertices_print(vertex *input, int count){
     for (int i = 0; i < count; i++){
         printf("===Vertex %d===\n", i);
-        print_vertex(&(input[i]));
+        vertex_print(&(input[i]));
     }
 }
 
-void print_vertex(vertex *input){;
+void vertex_print(vertex *input){;
     printf("Position: %f, %f\n", input->position[0], input->position[1]);
     printf("texcoord: %f, %f\n", input->text_coords[0], input->text_coords[1]);
     printf("texindex: %f\n", input->text_index);
