@@ -64,7 +64,7 @@ void nuklear_container_setup(GLFWwindow *window, struct nuklear_container *input
     input->bg.r = 0.10f, input->bg.g = 0.18f, input->bg.b = 0.24f, input->bg.a = 1.0f;
 }
 
-void nukclear_debug_menu_setup(struct nuklear_debug_menu *input, const char *name, float x1, float y1, float x2, float y2){
+void nuklear_debug_menu_setup(struct nuklear_debug_menu *input, const char *name, float x1, float y1, float x2, float y2){
     input->name = strdup(name);
     input->object_pos1[0] = x1;
     input->object_pos1[1] = y1;
@@ -72,7 +72,7 @@ void nukclear_debug_menu_setup(struct nuklear_debug_menu *input, const char *nam
     input->object_pos2[1] = y2;
 }
 
-void nukclear_debug_menu_draw(GLFWwindow *window, struct nuklear_container *container, struct nuklear_debug_menu *data){
+void nuklear_debug_menu_draw(GLFWwindow *window, struct nuklear_container *container, struct nuklear_debug_menu *data){
         nk_glfw3_new_frame(&container->glfw);
 
         /* GUI */
@@ -105,22 +105,14 @@ void nukclear_debug_menu_draw(GLFWwindow *window, struct nuklear_container *cont
 
         glfwGetWindowSize(window, &container->width, &container->height);
         glViewport(0, 0, container->width, container->height);
-        /* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
-         * with blending, scissor, face culling, depth test and viewport and
-         * defaults everything back into a default state.
-         * Make sure to either a.) save and restore or b.) reset your own state after
-         * rendering the UI. */
-        // I use opengl_set_default_state() for to reset this each frame
         nk_glfw3_render(&container->glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+        opengl_set_default_state();
 }
 
 
 int main(){
     GLFWwindow* window;
     window = setup_opengl(1024,768, key_callback);
-
-
-
 
     //Model View Projection
     mat4 projection;
@@ -145,7 +137,6 @@ int main(){
     //setup shaders
     shader main_shader;
     shader_create(&main_shader, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
-    //shader_set_uniform_1i(&main_shader, "uniformTexture", 0);
     shader_set_uniform_mat4f(&main_shader, "uniformMVP", mvp);
     int texture_slots[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     shader_set_uniform_1iv(&main_shader, "u_textures", 10, texture_slots);
@@ -180,8 +171,6 @@ int main(){
         2, 3, 0
     };
 
-
-
     //Vertex attributes for the quad
     int attribute_count = 4;
     vertex_attrib_pointer attributes[attribute_count];
@@ -197,7 +186,6 @@ int main(){
     renderable_object_create(&square_red, &quad_red, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, NULL);
     renderable_object_create(&square_green, &quad_green, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_head);
     renderable_object_create(&square_blue, &quad_blue, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, NULL);
-    //renderable_object_print(&square_red, "SQUARE RED");
 
     renderer *game_renderer = calloc(1, sizeof(renderer));
     renderer_attach_object(game_renderer, &square_red);
@@ -207,11 +195,11 @@ int main(){
     renderer_update_data(game_renderer);
 
 
-    //nukclear setup
+    //nuklear setup
     struct nuklear_container debug_menu;
     struct nuklear_debug_menu debug_menu_data;
     nuklear_container_setup(window, &debug_menu);
-    nukclear_debug_menu_setup(&debug_menu_data, "Debug Menu", 200.0f, 200.0f, 400.0f, 200.0f);
+    nuklear_debug_menu_setup(&debug_menu_data, "Debug Menu", 200.0f, 200.0f, 400.0f, 200.0f);
 
 
     
@@ -224,7 +212,7 @@ int main(){
         glClear(GL_COLOR_BUFFER_BIT);
   
     
-        nukclear_debug_menu_draw(window, &debug_menu, &debug_menu_data);
+        nuklear_debug_menu_draw(window, &debug_menu, &debug_menu_data);
 
         opengl_set_default_state();
         

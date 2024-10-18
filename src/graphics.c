@@ -224,7 +224,6 @@ void renderable_object_link(renderable_object *input, vertex_array *vao, buffer 
     input->vbo = vbo;
     input->ibo = ibo;
     input->shader = shader;
-    //input->texture = texture;
     vertex_array_bind(vao);
     buffer_bind(vbo);
     buffer_bind(ibo);
@@ -253,7 +252,6 @@ void renderable_object_create(renderable_object *input, void *vertices, int vert
     vertex_array_create(VAO);
     buffer_create(VBO, GL_ARRAY_BUFFER, vertices, vertices_count * sizeof(vertex));
     buffer_create(IBO, GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(GLuint) * indices_count);
-    //IBO.indices_count = indices_count;
 
     vertex_array_bind(VAO);
     buffer_bind(VBO);
@@ -698,7 +696,3 @@ bool GLLogCall(const char* function, const char* file, int line){
     return true;
 }
 
-// void APIENTRY gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
-//                                 GLsizei length, const GLchar *message, const void *userParam) {
-//     fprintf(stderr, "GL DEBUG MESSAGE: %s\n", message);
-// }
