@@ -34,14 +34,92 @@
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 
+struct nuklear_container{
+    struct nk_glfw glfw;
+    int width;
+    int height;
+    struct nk_context *ctx;
+    struct nk_colorf bg; 
+};
+
+struct nuklear_debug_menu{
+    const char *name;
+    float object_pos1[2];
+    float object_pos2[2];
+};
+
+
+void nuklear_container_setup(GLFWwindow *window, struct nuklear_container *input){
+    memset(&input->glfw, 0, sizeof(input->glfw));
+    input->width = 0;
+    input->height = 0;
+
+
+    input->ctx = nk_glfw3_init(&input->glfw, window, NK_GLFW3_INSTALL_CALLBACKS);
+
+    {struct nk_font_atlas *atlas;
+    nk_glfw3_font_stash_begin(&input->glfw, &atlas);
+    nk_glfw3_font_stash_end(&input->glfw);
+    }
+    input->bg.r = 0.10f, input->bg.g = 0.18f, input->bg.b = 0.24f, input->bg.a = 1.0f;
+}
+
+void nukclear_debug_menu_setup(struct nuklear_debug_menu *input, const char *name, float x1, float y1, float x2, float y2){
+    input->name = strdup(name);
+    input->object_pos1[0] = x1;
+    input->object_pos1[1] = y1;
+    input->object_pos2[0] = x2;
+    input->object_pos2[1] = y2;
+}
+
+void nukclear_debug_menu_draw(GLFWwindow *window, struct nuklear_container *container, struct nuklear_debug_menu *data){
+        nk_glfw3_new_frame(&container->glfw);
+
+        /* GUI */
+        if (nk_begin(container->ctx, data->name, nk_rect(50, 50, 230, 300),
+            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+            NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
+        {
+
+            nk_layout_row_dynamic(container->ctx, 20, 1);
+            nk_label(container->ctx, "A X axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(container->ctx, 25, 1);
+            nk_slider_float(container->ctx, 1.0f, &(data->object_pos1[0]), 1024.0f, 1.0f);
+            nk_layout_row_dynamic(container->ctx, 20, 1);
+            nk_label(container->ctx, "A Y axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(container->ctx, 25, 1);
+            nk_slider_float(container->ctx, 1.0f, &(data->object_pos1[1]), 768.0f, 1.0f);
+            nk_layout_row_dynamic(container->ctx, 20, 1);
+            nk_label(container->ctx, "B X axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(container->ctx, 25, 1);
+            nk_slider_float(container->ctx, 1.0f, &(data->object_pos2[0]), 1024.0f, 1.0f);
+            nk_layout_row_dynamic(container->ctx, 20, 1);
+            nk_label(container->ctx, "B Y axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(container->ctx, 25, 1);
+            nk_slider_float(container->ctx, 1.0f, &(data->object_pos2[1]), 768.0f, 1.0f);
+            nk_layout_row_dynamic(container->ctx, 25, 1);
+
+        }
+        nk_end(container->ctx);
+
+
+        glfwGetWindowSize(window, &container->width, &container->height);
+        glViewport(0, 0, container->width, container->height);
+        /* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
+         * with blending, scissor, face culling, depth test and viewport and
+         * defaults everything back into a default state.
+         * Make sure to either a.) save and restore or b.) reset your own state after
+         * rendering the UI. */
+        // I use opengl_set_default_state() for to reset this each frame
+        nk_glfw3_render(&container->glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+}
+
+
 int main(){
     GLFWwindow* window;
     window = setup_opengl(1024,768, key_callback);
 
-    struct nk_glfw glfw = {0};
-    int width = 0, height = 0;
-    struct nk_context *ctx;
-    struct nk_colorf bg;
+
 
 
     //Model View Projection
@@ -129,21 +207,13 @@ int main(){
     renderer_update_data(game_renderer);
 
 
-
-    ctx = nk_glfw3_init(&glfw, window, NK_GLFW3_INSTALL_CALLBACKS);
-    {struct nk_font_atlas *atlas;
-    nk_glfw3_font_stash_begin(&glfw, &atlas);
-    nk_glfw3_font_stash_end(&glfw);
-    }
-    bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
-
-    float modelxA = 200.0f;
-    float modelyA = 200.0f;
-    float modelxB = 400.0f;
-    float modelyB = 200.0f;
+    //nukclear setup
+    struct nuklear_container debug_menu;
+    struct nuklear_debug_menu debug_menu_data;
+    nuklear_container_setup(window, &debug_menu);
+    nukclear_debug_menu_setup(&debug_menu_data, "Debug Menu", 200.0f, 200.0f, 400.0f, 200.0f);
 
 
-    
     
     double previousTime = glfwGetTime();
     int frameCount = 0;
@@ -152,66 +222,20 @@ int main(){
     while (!glfwWindowShouldClose(window)){ // game loop
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+  
+    
+        nukclear_debug_menu_draw(window, &debug_menu, &debug_menu_data);
+
+        opengl_set_default_state();
         
-        
-        
-        
-        nk_glfw3_new_frame(&glfw);
-
-        /* GUI */
-        if (nk_begin(ctx, "Demo", nk_rect(50, 50, 230, 300),
-            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
-            NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
-        {
-
-            nk_layout_row_dynamic(ctx, 20, 1);
-            nk_label(ctx, "A X axis", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(ctx, 25, 1);
-            nk_slider_float(ctx, 1.0f, &modelxA, 1024.0f, 1.0f);
-            nk_layout_row_dynamic(ctx, 20, 1);
-            nk_label(ctx, "A Y axis", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(ctx, 25, 1);
-            nk_slider_float(ctx, 1.0f, &modelyA, 768.0f, 1.0f);
-            nk_layout_row_dynamic(ctx, 20, 1);
-            nk_label(ctx, "B X axis", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(ctx, 25, 1);
-            nk_slider_float(ctx, 1.0f, &modelxB, 1024.0f, 1.0f);
-            nk_layout_row_dynamic(ctx, 20, 1);
-            nk_label(ctx, "B Y axis", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(ctx, 25, 1);
-            nk_slider_float(ctx, 1.0f, &modelyB, 768.0f, 1.0f);
-            nk_layout_row_dynamic(ctx, 25, 1);
-
-        }
-        nk_end(ctx);
-
-
-        glfwGetWindowSize(window, &width, &height);
-        glViewport(0, 0, width, height);
-        /* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
-         * with blending, scissor, face culling, depth test and viewport and
-         * defaults everything back into a default state.
-         * Make sure to either a.) save and restore or b.) reset your own state after
-         * rendering the UI. */
-        nk_glfw3_render(&glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
-
-
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
-
-
-        quad_update_pos(&quad_red, modelxA, modelyA, 150);
-
-
-
+        quad_update_pos(&quad_red, debug_menu_data.object_pos1[0], debug_menu_data.object_pos1[1], 150);
+        quad_update_pos(&quad_green, debug_menu_data.object_pos2[0], debug_menu_data.object_pos2[1], 100);
         renderable_object_update_vertices(&square_red, &quad_red, 4);
+        renderable_object_update_vertices(&square_green, &quad_green, 4);
+
+
         renderer_update_data(game_renderer);
         renderer_draw(game_renderer);
-        //renderable_object_draw(&square_red);
 
 
         double currentTime = glfwGetTime();
@@ -220,13 +244,9 @@ int main(){
         if (currentTime - previousTime >= 1.0) {
             // Calculate FPS
             int fps = frameCount;
-
-            // Create a new title string with the FPS
             char title[256];
             snprintf(title, sizeof(title), "My Game - [FPS: %d]", fps);
             glfwSetWindowTitle(window, title);
-
-            // Reset frame count and previous time
             frameCount = 0;
             previousTime = currentTime;
         }

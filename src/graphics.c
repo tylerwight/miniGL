@@ -663,6 +663,14 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
         return window;
 }
 
+void opengl_set_default_state(){
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+}
+
 //////////////////////////
 //////Error Handling////////////
 /////////////////////////

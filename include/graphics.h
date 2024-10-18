@@ -173,6 +173,7 @@ void indices_print(void *data, int indices_count);
 
 
 GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
+void opengl_set_default_state();
 
 bool GLLogCall(const char* function, const char* file, int line);
 void GLClearError();
