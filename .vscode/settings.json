@@ -8,6 +8,8 @@
         "alut.h": "c",
         "stb_image.h": "c",
         "glew.h": "c",
-        "vec3.h": "c"
+        "vec3.h": "c",
+        "time.h": "c",
+        "glfw3.h": "c"
     }
 }

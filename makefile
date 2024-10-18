@@ -10,7 +10,7 @@ INC_DIR = include
 BUILD_DIR = build
 
 # Source files
-SRCS = $(SRC_DIR)/main.c $(SRC_DIR)/graphics.c $(SRC_DIR)/game.c $(SRC_DIR)/audio.c
+SRCS = $(SRC_DIR)/main.c $(SRC_DIR)/graphics.c $(SRC_DIR)/game.c $(SRC_DIR)/audio.c $(SRC_DIR)/menus.c
 
 # Object files (build directory + source file name with .o extension)
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)

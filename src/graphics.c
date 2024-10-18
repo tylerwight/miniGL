@@ -259,6 +259,7 @@ void renderable_object_link(renderable_object *input, vertex_array *vao, buffer 
 }
 
 void renderable_object_create(renderable_object *input, void *vertices, int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture){
+    glm_mat4_identity(input->model_matrix);
     input->shader = shader;
     if (texture != NULL){
         input->texture = texture;
@@ -306,8 +307,31 @@ void renderable_object_print(renderable_object *input, const char* name){
     
 }
 
+
+/*
+    glUseProgram(input->objects[0].shader->program);
+    shader_set_uniform_mat4f(&input->objects[0].shader->program, "uniform_model_matrix", input->model_matrix);   
+    vertex_array_bind((input->vao));
+    buffer_bind(input->vbo);
+    buffer_bind(input->ibo);
+    
+    GLCall(glDrawElements(GL_TRIANGLES, input->ibo->length/sizeof(GLuint), GL_UNSIGNED_INT, 0));
+    vertex_array_unbind((input->vao));
+*/
+
+void renderable_object_translate(renderable_object *input, float x, float y){
+    printf("Before translation:\n");
+    glm_mat4_print(input->model_matrix, stdout);
+    vec3 modeltranslation = {x, y, 0.0f};
+    glm_translate(input->model_matrix, modeltranslation);
+    printf("After translation:\n");
+    glm_mat4_print(input->model_matrix, stdout);
+}
+
+
 void renderable_object_draw(renderable_object *input){
     glUseProgram(input->shader->program);
+    shader_set_uniform_mat4f(&input->shader->program, "uniform_model_matrix", input->model_matrix);
     vertex_array_bind((input->vao));
     if (input->texture != NULL){
         glBindTextureUnit(1, input->texture->id);// assign texture to slot 1
@@ -422,7 +446,7 @@ void renderer_update_data(renderer *input){
 }
 
 void renderer_initialize(renderer *input){
-
+    glm_mat4_identity(input->model_matrix);
     vertex_array *VAO = calloc(1, sizeof(vertex_array));
     buffer *VBO = calloc(1, sizeof(buffer));
     buffer *IBO = calloc(1, sizeof(buffer));
@@ -457,13 +481,22 @@ void renderer_initialize(renderer *input){
 
 }
 
+void renderer_translate(renderer *input, float x, float y){
+    printf("Before translation:\n");
+    glm_mat4_print(input->model_matrix, stdout);
+    vec3 modeltranslation = {x, y, 0.0f};
+    glm_translate(input->model_matrix, modeltranslation);
+    printf("After translation:\n");
+    glm_mat4_print(input->model_matrix, stdout);
+}
 
-
-void renderer_draw(renderer *input){   
+void renderer_draw(renderer *input){
+    glUseProgram(input->objects[0].shader->program);
+    shader_set_uniform_mat4f(&input->objects[0].shader->program, "uniform_model_matrix", input->model_matrix);   
     vertex_array_bind((input->vao));
     buffer_bind(input->vbo);
     buffer_bind(input->ibo);
-    glUseProgram(input->objects[0].shader->program);
+    
     GLCall(glDrawElements(GL_TRIANGLES, input->ibo->length/sizeof(GLuint), GL_UNSIGNED_INT, 0));
     vertex_array_unbind((input->vao));
 }
@@ -631,6 +664,22 @@ void quad_create(quad *dest, float x, float y, int size, color color, float text
     dest->v2 = v2;
     dest->v3 = v3;
 
+}
+
+
+
+//view projection
+
+void view_projection_create(mat4 dest, float x, float y){
+    //View Projection
+    mat4 projection;
+    glm_ortho(0.0f, x, 0.0f, y, -1.0f, 1.0f, projection);
+
+    mat4 view;
+    glm_mat4_identity(view);
+
+    glm_mat4_mul(projection, view, dest);
+    
 }
 
 //////////////////////////

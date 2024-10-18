@@ -4,6 +4,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <ft2build.h>
+#define CGLM_DEFINE_PRINTS
+
 #include <cglm/cglm.h>
 #include <cglm/vec3.h>
 #include <cglm/mat4.h> 
@@ -14,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define ASSERT(x) if (!(x)) raise(SIGTRAP);
 #define GLCall(x) GLClearError();\
@@ -22,6 +25,7 @@
 
 
 #define MAX_VERTX_ATTRIBS 4
+#define MAX_TEXTURE_SLOTS 10
 
 
 
@@ -29,6 +33,7 @@ typedef struct shader {
     GLuint program;
     const char* vertex_source;
     const char* fragment_source;
+    mat4 view_projection;
 } shader;
 
 
@@ -101,6 +106,7 @@ typedef struct renderer{
     vertex_array *vao;
     buffer *vbo;
     buffer *ibo;
+    mat4 model_matrix;
 } renderer;
 
 
@@ -142,11 +148,14 @@ void renderable_object_delete(renderable_object *input);
 void renderable_object_create(renderable_object *input, void *vertices, int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture);
 void renderable_object_print(renderable_object *input, const char* name);
 void renderable_object_update_vertices(renderable_object *input, void *data, int vertices_count);
+void renderable_object_translate(renderable_object *input, float x, float y);
+
 
 //renderer
 void renderer_update_data(renderer *input);
 void renderer_attach_object(renderer *input, renderable_object *object);
 void renderer_initialize(renderer *input);
+void renderer_translate(renderer *input, float x, float y);
 void renderer_draw(renderer *input);
 
 
@@ -166,6 +175,9 @@ void quad_create(quad *dest, float x, float y, int size, color color, float text
 void vertices_print(vertex *input, int count);
 
 void indices_print(void *data, int indices_count);
+
+// view projection
+void view_projection_create(mat4 dest, float x, float y);
 
 //batching
 //void batch_add($)
