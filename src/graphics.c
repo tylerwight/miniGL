@@ -549,6 +549,21 @@ void quad_set_texture_slot(quad *quad, float slot){
     quad->v3.text_slot = slot;
 }
 
+
+void quad_update_pos(quad *dest, float x, float y, int size){
+    dest->v0.position[0] = x;
+    dest->v0.position[1] = y;
+
+    dest->v1.position[0] = x + size;
+    dest->v1.position[1] = y;
+
+    dest->v2.position[0] = x + size;
+    dest->v2.position[1] = y + size;
+
+    dest->v3.position[0] = x;
+    dest->v3.position[1] = y + size;
+
+}
 void quad_create(quad *dest, float x, float y, int size, color color, float texture_slot){
     struct vertex v0;
     v0.position[0] = x;

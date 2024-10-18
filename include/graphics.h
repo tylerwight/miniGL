@@ -161,6 +161,7 @@ void color_set(color* dest, float r, float g, float b, float a);
 
 //vertices setup
 void vertex_print(vertex *input);
+void quad_update_pos(quad *dest, float x, float y, int size);
 void quad_create(quad *dest, float x, float y, int size, color color, float texture_id);
 void vertices_print(vertex *input, int count);
 

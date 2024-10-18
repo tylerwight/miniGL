@@ -197,25 +197,21 @@ int main(){
 
 
 
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 
 
+        quad_update_pos(&quad_red, modelxA, modelyA, 150);
 
 
 
-
-        // quad_red.v0.position[0] += 0.1;
-        // quad_red.v0.position[1] += 0.1;
-        // quad_red.v1.position[0] += 0.1;
-        // quad_red.v1.position[1] += 0.1;
-        // quad_red.v2.position[0] += 0.1;
-        // quad_red.v2.position[1] += 0.1;
-        // quad_red.v3.position[0] += 0.1;
-        // quad_red.v3.position[1] += 0.1;
-        //renderable_object_update_vertices(&square_red, &quad_red, 4);
-        //renderer_update_data(game_renderer);
-        //renderer_draw(game_renderer);
-        renderable_object_draw(&square_red);
+        renderable_object_update_vertices(&square_red, &quad_red, 4);
+        renderer_update_data(game_renderer);
+        renderer_draw(game_renderer);
+        //renderable_object_draw(&square_red);
 
 
         double currentTime = glfwGetTime();
