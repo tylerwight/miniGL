@@ -1,9 +1,9 @@
 # miniGL
 
 
-A small and simple 2D OpenGL "engine" using: 
+A small and simple 2D OpenGL "engine" in C using: 
 - GLFW - multi platform OpenGL
-- GLEW - to get OpenGL extensions
+- GLEW - OpenGL extensions
 - Nuklear - menus
 - OpenAL - audio (todo)
 
