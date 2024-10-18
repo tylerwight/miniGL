@@ -15,7 +15,20 @@
 #include <cglm/cam.h> 
 #include <cglm/affine.h>
 //#include "game.h"
-
+#define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_STANDARD_IO
+#define NK_INCLUDE_STANDARD_VARARGS
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_FONT_BAKING
+#define NK_INCLUDE_DEFAULT_FONT
+#define NK_IMPLEMENTATION
+#define NK_GLFW_GL3_IMPLEMENTATION
+#define NK_KEYSTATE_BASED_INPUT
+#include "nuklear.h"
+#include "nuklear_glfw_gl3.h"
+#define MAX_VERTEX_BUFFER 512 * 1024
+#define MAX_ELEMENT_BUFFER 128 * 1024
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -24,6 +37,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 int main(){
     GLFWwindow* window;
     window = setup_opengl(1024,768, key_callback);
+
+    struct nk_glfw glfw = {0};
+    int width = 0, height = 0;
+    struct nk_context *ctx;
+    struct nk_colorf bg;
 
 
     //Model View Projection
@@ -107,9 +125,23 @@ int main(){
     renderer_attach_object(game_renderer, &square_red);
     renderer_attach_object(game_renderer, &square_green);
     renderer_attach_object(game_renderer, &square_blue);
-    renderer_initialize(game_renderer);
-    
+    renderer_initialize(game_renderer);    
     renderer_update_data(game_renderer);
+
+
+
+    ctx = nk_glfw3_init(&glfw, window, NK_GLFW3_INSTALL_CALLBACKS);
+    {struct nk_font_atlas *atlas;
+    nk_glfw3_font_stash_begin(&glfw, &atlas);
+    nk_glfw3_font_stash_end(&glfw);
+    }
+    bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
+
+    float modelxA = 200.0f;
+    float modelyA = 200.0f;
+    float modelxB = 400.0f;
+    float modelyB = 200.0f;
+
 
     
     
@@ -120,6 +152,58 @@ int main(){
     while (!glfwWindowShouldClose(window)){ // game loop
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        
+        
+        
+        
+        nk_glfw3_new_frame(&glfw);
+
+        /* GUI */
+        if (nk_begin(ctx, "Demo", nk_rect(50, 50, 230, 300),
+            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+            NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
+        {
+
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "A X axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_slider_float(ctx, 1.0f, &modelxA, 1024.0f, 1.0f);
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "A Y axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_slider_float(ctx, 1.0f, &modelyA, 768.0f, 1.0f);
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "B X axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_slider_float(ctx, 1.0f, &modelxB, 1024.0f, 1.0f);
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "B Y axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_slider_float(ctx, 1.0f, &modelyB, 768.0f, 1.0f);
+            nk_layout_row_dynamic(ctx, 25, 1);
+
+        }
+        nk_end(ctx);
+
+
+        glfwGetWindowSize(window, &width, &height);
+        glViewport(0, 0, width, height);
+        /* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
+         * with blending, scissor, face culling, depth test and viewport and
+         * defaults everything back into a default state.
+         * Make sure to either a.) save and restore or b.) reset your own state after
+         * rendering the UI. */
+        nk_glfw3_render(&glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
+
+
+
+
+
+
+
+
+
         // quad_red.v0.position[0] += 0.1;
         // quad_red.v0.position[1] += 0.1;
         // quad_red.v1.position[0] += 0.1;
