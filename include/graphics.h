@@ -21,8 +21,6 @@
     ASSERT(GLLogCall(#x, __FILE__, __LINE__))
 
 
-
-#define MAX_OBJECTS 1000
 #define MAX_VERTX_ATTRIBS 4
 
 
@@ -48,6 +46,7 @@ typedef struct vertex_attrib_pointer{
     GLboolean normalized;
     GLsizei stride;
     GLvoid* pointer;
+    GLint pointer_offset;
     
 } vertex_attrib_pointer;
 
@@ -133,6 +132,7 @@ void vertex_array_create(vertex_array *input);
 void vertex_array_bind(vertex_array *input);
 void vertex_array_unbind();
 vertex_attrib_pointer vertex_array_attribute_create(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLvoid *pointer);
+void vertex_array_attribute_add(vertex_attrib_pointer *attributes, int attribute_index, GLenum type, int count);
 void vertex_array_delete(vertex_array *input);
 
 //renderable Object functions

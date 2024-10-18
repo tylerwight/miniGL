@@ -54,7 +54,7 @@ clean:
 rebuild: clean all
 
 
-CFLAGS_DEBUG = $(CFLAGS) -g
+CFLAGS_DEBUG = $(INCLUDES) -Wall -Wextra -g
 
 debug: clean
 	$(MAKE) CFLAGS="$(CFLAGS_DEBUG)" all

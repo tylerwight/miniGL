@@ -215,6 +215,25 @@ vertex_attrib_pointer vertex_array_attribute_create(GLuint index, GLint size, GL
 
 }
 
+void vertex_array_attribute_add(vertex_attrib_pointer *attributes, int attribute_index, GLenum type, int count){
+    if (type != GL_FLOAT){printf("Error: only support float attributes for now\n"); return;}
+
+    int stride = 0;
+    int offset = 0;
+
+    if (attribute_index != 0){stride = attributes[0].stride;}
+    stride += sizeof(float)*count;
+
+    for (int i = 0; i < attribute_index; i++){
+        offset += attributes[i].size;
+        attributes[i].stride = stride;
+    }
+
+    attributes[attribute_index] = vertex_array_attribute_create(attribute_index, count, type, GL_FALSE, stride, (void*)(offset * sizeof(float) )); 
+    attributes[attribute_index].pointer_offset = offset;
+
+}
+
 
 //////////////////////////
 //////RENDERABLE OBJECTS////////////

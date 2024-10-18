@@ -31,9 +31,6 @@
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-
 struct nuklear_container{
     struct nk_glfw glfw;
     int width;
@@ -48,66 +45,10 @@ struct nuklear_debug_menu{
     float object_pos2[2];
 };
 
-
-void nuklear_container_setup(GLFWwindow *window, struct nuklear_container *input){
-    memset(&input->glfw, 0, sizeof(input->glfw));
-    input->width = 0;
-    input->height = 0;
-
-
-    input->ctx = nk_glfw3_init(&input->glfw, window, NK_GLFW3_INSTALL_CALLBACKS);
-
-    {struct nk_font_atlas *atlas;
-    nk_glfw3_font_stash_begin(&input->glfw, &atlas);
-    nk_glfw3_font_stash_end(&input->glfw);
-    }
-    input->bg.r = 0.10f, input->bg.g = 0.18f, input->bg.b = 0.24f, input->bg.a = 1.0f;
-}
-
-void nuklear_debug_menu_setup(struct nuklear_debug_menu *input, const char *name, float x1, float y1, float x2, float y2){
-    input->name = strdup(name);
-    input->object_pos1[0] = x1;
-    input->object_pos1[1] = y1;
-    input->object_pos2[0] = x2;
-    input->object_pos2[1] = y2;
-}
-
-void nuklear_debug_menu_draw(GLFWwindow *window, struct nuklear_container *container, struct nuklear_debug_menu *data){
-        nk_glfw3_new_frame(&container->glfw);
-
-        /* GUI */
-        if (nk_begin(container->ctx, data->name, nk_rect(50, 50, 230, 300),
-            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
-            NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
-        {
-
-            nk_layout_row_dynamic(container->ctx, 20, 1);
-            nk_label(container->ctx, "A X axis", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(container->ctx, 25, 1);
-            nk_slider_float(container->ctx, 1.0f, &(data->object_pos1[0]), 1024.0f, 1.0f);
-            nk_layout_row_dynamic(container->ctx, 20, 1);
-            nk_label(container->ctx, "A Y axis", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(container->ctx, 25, 1);
-            nk_slider_float(container->ctx, 1.0f, &(data->object_pos1[1]), 768.0f, 1.0f);
-            nk_layout_row_dynamic(container->ctx, 20, 1);
-            nk_label(container->ctx, "B X axis", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(container->ctx, 25, 1);
-            nk_slider_float(container->ctx, 1.0f, &(data->object_pos2[0]), 1024.0f, 1.0f);
-            nk_layout_row_dynamic(container->ctx, 20, 1);
-            nk_label(container->ctx, "B Y axis", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(container->ctx, 25, 1);
-            nk_slider_float(container->ctx, 1.0f, &(data->object_pos2[1]), 768.0f, 1.0f);
-            nk_layout_row_dynamic(container->ctx, 25, 1);
-
-        }
-        nk_end(container->ctx);
-
-
-        glfwGetWindowSize(window, &container->width, &container->height);
-        glViewport(0, 0, container->width, container->height);
-        nk_glfw3_render(&container->glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
-        opengl_set_default_state();
-}
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void nuklear_container_setup(GLFWwindow *window, struct nuklear_container *input);
+void nuklear_debug_menu_setup(struct nuklear_debug_menu *input, const char *name, float x1, float y1, float x2, float y2);
+void nuklear_debug_menu_draw(GLFWwindow *window, struct nuklear_container *container, struct nuklear_debug_menu *data);
 
 
 int main(){
@@ -171,16 +112,17 @@ int main(){
         2, 3, 0
     };
 
-    //Vertex attributes for the quad
+    
+    // new attributes testing
     int attribute_count = 4;
     vertex_attrib_pointer attributes[attribute_count];
-    int stride = 9;
+    vertex_array_attribute_add(attributes, 0, GL_FLOAT, 2); // position
+    vertex_array_attribute_add(attributes, 1, GL_FLOAT, 2); // texture position
+    vertex_array_attribute_add(attributes, 2, GL_FLOAT, 1); // texture slot/id
+    vertex_array_attribute_add(attributes, 3, GL_FLOAT, 4); // color
 
-    attributes[0] = vertex_array_attribute_create(0, 2, GL_FLOAT, GL_FALSE, stride*sizeof(float), (void*)0);                  // position
-    attributes[1] = vertex_array_attribute_create(1, 2, GL_FLOAT, GL_FALSE, stride*sizeof(float), (void*)(2*sizeof(float)));  // texture position
-    attributes[2] = vertex_array_attribute_create(2, 1, GL_FLOAT, GL_FALSE, stride*sizeof(float), (void*)(4*sizeof(float)));  // texture index
-    attributes[3] = vertex_array_attribute_create(3, 4, GL_FLOAT, GL_FALSE, stride*sizeof(float), (void*)(5*sizeof(float)));  // color
-    
+    int test = 5+5;
+
     // create the object
     renderable_object square_red, square_green, square_blue;
     renderable_object_create(&square_red, &quad_red, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, NULL);
@@ -213,8 +155,6 @@ int main(){
   
     
         nuklear_debug_menu_draw(window, &debug_menu, &debug_menu_data);
-
-        opengl_set_default_state();
         
         quad_update_pos(&quad_red, debug_menu_data.object_pos1[0], debug_menu_data.object_pos1[1], 150);
         quad_update_pos(&quad_green, debug_menu_data.object_pos2[0], debug_menu_data.object_pos2[1], 100);
@@ -275,4 +215,65 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
                 break;
         }
     }
+}
+
+
+void nuklear_container_setup(GLFWwindow *window, struct nuklear_container *input){
+    memset(&input->glfw, 0, sizeof(input->glfw));
+    input->width = 0;
+    input->height = 0;
+
+
+    input->ctx = nk_glfw3_init(&input->glfw, window, NK_GLFW3_INSTALL_CALLBACKS);
+
+    {struct nk_font_atlas *atlas;
+    nk_glfw3_font_stash_begin(&input->glfw, &atlas);
+    nk_glfw3_font_stash_end(&input->glfw);
+    }
+    input->bg.r = 0.10f, input->bg.g = 0.18f, input->bg.b = 0.24f, input->bg.a = 1.0f;
+}
+
+void nuklear_debug_menu_setup(struct nuklear_debug_menu *input, const char *name, float x1, float y1, float x2, float y2){
+    input->name = strdup(name);
+    input->object_pos1[0] = x1;
+    input->object_pos1[1] = y1;
+    input->object_pos2[0] = x2;
+    input->object_pos2[1] = y2;
+}
+
+void nuklear_debug_menu_draw(GLFWwindow *window, struct nuklear_container *container, struct nuklear_debug_menu *data){
+        nk_glfw3_new_frame(&container->glfw);
+
+        /* GUI */
+        if (nk_begin(container->ctx, data->name, nk_rect(50, 50, 230, 300),
+            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+            NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
+        {
+
+            nk_layout_row_dynamic(container->ctx, 20, 1);
+            nk_label(container->ctx, "A X axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(container->ctx, 25, 1);
+            nk_slider_float(container->ctx, 1.0f, &(data->object_pos1[0]), 1024.0f, 1.0f);
+            nk_layout_row_dynamic(container->ctx, 20, 1);
+            nk_label(container->ctx, "A Y axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(container->ctx, 25, 1);
+            nk_slider_float(container->ctx, 1.0f, &(data->object_pos1[1]), 768.0f, 1.0f);
+            nk_layout_row_dynamic(container->ctx, 20, 1);
+            nk_label(container->ctx, "B X axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(container->ctx, 25, 1);
+            nk_slider_float(container->ctx, 1.0f, &(data->object_pos2[0]), 1024.0f, 1.0f);
+            nk_layout_row_dynamic(container->ctx, 20, 1);
+            nk_label(container->ctx, "B Y axis", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(container->ctx, 25, 1);
+            nk_slider_float(container->ctx, 1.0f, &(data->object_pos2[1]), 768.0f, 1.0f);
+            nk_layout_row_dynamic(container->ctx, 25, 1);
+
+        }
+        nk_end(container->ctx);
+
+
+        glfwGetWindowSize(window, &container->width, &container->height);
+        glViewport(0, 0, container->width, container->height);
+        nk_glfw3_render(&container->glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+        opengl_set_default_state();
 }
