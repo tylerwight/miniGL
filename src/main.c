@@ -1,14 +1,32 @@
-#include "graphics.h"
-#include "menus.h"
-#include "audio.h"
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+#include "minigl.h"
 
 
+void process_input(engine *engine, renderable_object *object){
+    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_ESCAPE)) {
+        glfwSetWindowShouldClose(engine->window, GLFW_TRUE);
+    }
+
+    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_W)) {
+        renderable_object_translate(object, 0.0f, 0.5f);
+    }
+    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_A)) {
+        renderable_object_translate(object, -0.5f, 0.0f);
+    }
+    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_S)) {
+        renderable_object_translate(object, 0.0f, -0.5f);
+    }
+    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_D)) {
+        renderable_object_translate(object, 0.5f, 0.0f);
+    }
+    
+}
 
 int main(){
+    engine test_app = {0};
     GLFWwindow* window;
     window = setup_opengl(1024,768, key_callback);
+    test_app.window = window;
+    
     
     //setup shaders
     shader main_shader;
@@ -80,23 +98,26 @@ int main(){
     struct nuklear_debug_menu debug_menu_data;
     nuklear_container_setup(window, &debug_menu);
     nuklear_debug_menu_setup(&debug_menu_data, "Debug Menu", 200.0f, 200.0f, 400.0f, 200.0f);
-    glfwSetWindowUserPointer(window, game_renderer);
+
+    initialize_input(window);
+    glfwSetWindowUserPointer(window, &test_app);
 
     
     double previousTime = glfwGetTime();
     int frameCount = 0;
-
+    glfwSwapInterval(1);
     //main loop
     while (!glfwWindowShouldClose(window)){ // game loop
-        
-        glfwPollEvents();
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-  
-    
+
+        update_input(&(test_app.engine_input_manager));
+        glfwPollEvents();
+        process_input(&test_app, &square_test);
+        
         nuklear_debug_menu_draw(window, &debug_menu, &debug_menu_data);
         //renderer_translate(game_renderer, 0.0f, 0.5f);
-        renderable_object_translate(&square_test, 0.5f, 0.0f);
+        
         renderable_object_draw(&square_test);
         renderer_draw(game_renderer);
         
@@ -109,7 +130,7 @@ int main(){
             // Calculate FPS
             int fps = frameCount;
             char title[256];
-            snprintf(title, sizeof(title), "My Game - [FPS: %d]", fps);
+            snprintf(title, sizeof(title), "miniGL - [FPS: %d]", fps);
             glfwSetWindowTitle(window, title);
             frameCount = 0;
             previousTime = currentTime;
@@ -129,34 +150,5 @@ int main(){
 
 
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
-    renderer *game_renderer = glfwGetWindowUserPointer(window);
-
-    if (action == GLFW_PRESS || action == GLFW_RELEASE) {
-      if (action == GLFW_PRESS) {
-          //move = 1;
-      } else {
-          //move = 0;
-      }
-
-        switch (key) {
-            case GLFW_KEY_UP:
-                renderer_translate(game_renderer, 0.0f, 10.0f);
-                break;
-            case GLFW_KEY_DOWN:
-                renderer_translate(game_renderer, 0.0f, -10.0f);
-                break;
-            case GLFW_KEY_LEFT:
-                renderer_translate(game_renderer, -10.0f, 0.0f);
-                break;
-            case GLFW_KEY_RIGHT:
-                renderer_translate(game_renderer, 10.0f, 0.0f);
-                break;
-            case GLFW_KEY_ESCAPE:
-                glfwSetWindowShouldClose(window, GLFW_TRUE);
-                break;
-        }
-    }
-}
 
 

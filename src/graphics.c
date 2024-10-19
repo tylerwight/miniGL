@@ -320,12 +320,9 @@ void renderable_object_print(renderable_object *input, const char* name){
 */
 
 void renderable_object_translate(renderable_object *input, float x, float y){
-    printf("Before translation:\n");
-    glm_mat4_print(input->model_matrix, stdout);
     vec3 modeltranslation = {x, y, 0.0f};
     glm_translate(input->model_matrix, modeltranslation);
-    printf("After translation:\n");
-    glm_mat4_print(input->model_matrix, stdout);
+
 }
 
 
@@ -482,12 +479,8 @@ void renderer_initialize(renderer *input){
 }
 
 void renderer_translate(renderer *input, float x, float y){
-    printf("Before translation:\n");
-    glm_mat4_print(input->model_matrix, stdout);
     vec3 modeltranslation = {x, y, 0.0f};
     glm_translate(input->model_matrix, modeltranslation);
-    printf("After translation:\n");
-    glm_mat4_print(input->model_matrix, stdout);
 }
 
 void renderer_draw(renderer *input){
@@ -714,7 +707,7 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
             printf("Failed to initialize GLEW\n");
             exit(-1);
         }
-        glfwSetKeyCallback(window, key_callback);
+        //glfwSetKeyCallback(window, key_callback);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
