@@ -324,17 +324,6 @@ void renderable_object_print(renderable_object *input, const char* name){
 }
 
 
-/*
-    glUseProgram(input->objects[0].shader->program);
-    shader_set_uniform_mat4f(&input->objects[0].shader->program, "uniform_model_matrix", input->model_matrix);   
-    vertex_array_bind((input->vao));
-    buffer_bind(input->vbo);
-    buffer_bind(input->ibo);
-    
-    GLCall(glDrawElements(GL_TRIANGLES, input->ibo->length/sizeof(GLuint), GL_UNSIGNED_INT, 0));
-    vertex_array_unbind((input->vao));
-*/
-
 void renderable_object_translate(renderable_object *input, float x, float y){
     vec3 modeltranslation = {x, y, 0.0f};
     glm_translate(input->model_matrix, modeltranslation);
@@ -343,14 +332,7 @@ void renderable_object_translate(renderable_object *input, float x, float y){
 
 
 void renderable_object_draw(renderable_object *input){
-    static GLint current_program = 0;
-    current_program = input->shader->program;
-
-    if (current_program != input->shader->program) {
-        printf("Changing Shader\n");
-        glUseProgram(input->shader->program);
-    }
-    //printf("drawing RA, setting model matrix\n");
+    glUseProgram(input->shader->program);
     shader_set_uniform_mat4f(&input->shader->program, "uniform_model_matrix", input->model_matrix);
 
     vertex_array_bind((input->vao));
@@ -405,49 +387,91 @@ void renderable_batch_attach_object(renderable_batch *input, renderable_object *
     
 }
 
-void renderable_batch_update_data(renderable_batch *input){
-    if (input->object_count == 0){
+void renderable_batch_populate_buffers(renderable_batch *input, void *vertex_data, void *index_data) {
+    int vertex_offset = 0;
+    int index_offset = 0;
+    int total_vertices = 0;
+
+    for (int i = 0; i < input->object_count; i++) {
+        renderable_object *object = input->objects[i];
+
+        // Copy vertex data
+        memcpy((char *)vertex_data + vertex_offset, object->vbo->data, object->vbo->length);
+        vertex_offset += object->vbo->length;
+
+        // Adjust and copy index data
+        GLuint *tmp_indices = malloc(object->ibo->length);
+        memcpy(tmp_indices, object->ibo->data, object->ibo->length);
+
+        for (unsigned int j = 0; j < object->ibo->length / sizeof(GLuint); j++) {
+            tmp_indices[j] += total_vertices;
+        }
+
+        memcpy((char *)index_data + index_offset, tmp_indices, object->ibo->length);
+        index_offset += object->ibo->length;
+
+        total_vertices += object->vbo->length / sizeof(vertex);
+        free(tmp_indices);
+    }
+}
+
+void renderable_batch_update_textures(renderable_batch *input) {
+    for (int i = 0; i < input->object_count; i++) {
+        renderable_object *object = input->objects[i];
+
+        if (object->texture != NULL) {
+            int slot = -1;
+
+            // Search for an existing slot for this texture
+            for (int j = 0; j < input->used_slots; j++) {
+                if (input->texture_slots[j] == object->texture) {
+                    slot = j + 1;  // Slot found
+                    break;
+                }
+            }
+
+            // If texture is not found, assign a new slot
+            if (slot == -1) {
+                slot = input->used_slots + 1;
+                if (slot > MAX_TEXTURE_SLOTS){printf("MAX TEXTURE SLOTS EXCEEDED");}
+                input->texture_slots[slot] = object->texture;
+                input->used_slots++;
+            }
+
+            // Bind texture and update buffer
+            printf("Binding texture %d to slot %d\n", object->texture->id, slot);
+            glBindTextureUnit(slot, object->texture->id);
+            buffer_update_text_slot(object->vbo, slot);
+        } else {
+            printf("Setting object %d texture slot to 0\n", i);
+            buffer_update_text_slot(object->vbo, 0);
+        }
+    }
+}
+
+void renderable_batch_update_data(renderable_batch *input) {
+    if (input->object_count == 0) {
         printf("No renderable objects attached to renderable_batch\n");
         return;
     }
 
     vertex_array_bind(input->vao);
+    buffer_bind((input->vbo));
+    buffer_bind((input->ibo));
 
     int vertex_data_length = 0;
     int index_data_length = 0;
 
+    // Calculate total vertex and index data lengths
     for (int i = 0; i < input->object_count; i++) {
         vertex_data_length += input->objects[i]->vbo->length;
         index_data_length += input->objects[i]->ibo->length;
-
-        if (input->objects[i]->texture != NULL) {
-            int slot = -1;
-
-            // Search if the texture has already been assigned to a slot
-            for (int j = 0; j < input->used_slots; j++) {
-                if (input->texture_slots[j] == input->objects[i]->texture) {
-                    slot = j + 1;  // Found a previously used slot
-                    break;
-                }
-            }
-
-            // If the texture was not found in existing slots, assign a new slot
-            if (slot == -1) {
-                slot = input->used_slots + 1;  // Assign next available slot
-                input->texture_slots[slot] = input->objects[i]->texture;
-                input->used_slots++;  // Increment the used slot count
-            }
-            
-            printf("binding texture %d to slot: %d\n", input->objects[i]->texture->id, slot);
-            printf("updating object %d vertex text slot to %d\n", i, slot);
-            glBindTextureUnit(slot, input->objects[i]->texture->id);
-            buffer_update_text_slot(input->objects[i]->vbo, slot);
-        } else {
-            printf("setting object %d texture slot to 0\n", i);
-            buffer_update_text_slot(input->objects[i]->vbo, 0);
-        }
     }
 
+    // Update texture slots for each object
+    renderable_batch_update_textures(input);
+
+    // Allocate memory for vertex and index data
     void *vertex_data = malloc(vertex_data_length);
     void *index_data = malloc(index_data_length);
     if (vertex_data == NULL || index_data == NULL) {
@@ -455,34 +479,8 @@ void renderable_batch_update_data(renderable_batch *input){
         return;
     }
 
-    int vertex_offset = 0;
-    int index_offset = 0;   
-    int total_vertices = 0;
-
-    // Populate the vertex and index data from each renderable object
-    for (int i = 0; i < input->object_count; i++) {
-        renderable_object *object = input->objects[i];
-
-        // Copy vertex data into the batch's vertex buffer
-        memcpy((char *)vertex_data + vertex_offset, object->vbo->data, object->vbo->length);
-        vertex_offset += object->vbo->length;
-
-        // Copy and adjust index data based on the current total vertex offset
-        GLuint *tmp_indices = malloc(object->ibo->length);
-        memcpy(tmp_indices, object->ibo->data, object->ibo->length);
-
-        // Adjust each index by the total number of vertices added so far
-        for (unsigned int j = 0; j < object->ibo->length / sizeof(GLuint); j++) {
-            tmp_indices[j] += total_vertices;
-        }
-
-        // Copy the adjusted indices into the batch's index buffer
-        memcpy((char *)index_data + index_offset, tmp_indices, object->ibo->length);
-        index_offset += object->ibo->length;
-
-        total_vertices += object->vbo->length / sizeof(vertex); // Increment total vertex count
-        free(tmp_indices);
-    }
+    // Populate vertex and index data with data from all objects
+    renderable_batch_populate_buffers(input, vertex_data, index_data);
 
     // Update the buffers with the new data
     buffer_set_data(input->vbo, vertex_data, vertex_data_length);
@@ -534,13 +532,6 @@ void renderable_batch_translate(renderable_batch *input, float x, float y){
 }
 
 void renderable_batch_draw(renderable_batch *input){
-    static GLint current_program = 0;
-    current_program = input->objects[0]->shader->program;
-
-    if (current_program != input->objects[0]->shader->program) {
-        printf("Changing Shader\n");
-        
-    }
     glUseProgram(input->objects[0]->shader->program);
     
     shader_set_uniform_mat4f(&input->objects[0]->shader->program, "uniform_model_matrix", input->model_matrix); 

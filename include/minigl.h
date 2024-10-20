@@ -11,6 +11,20 @@ typedef struct {
     GLFWwindow *window;
 } engine;
 
+typedef struct{
+    float position[2];
+    float velocity[2];
+    renderable_object *renderable;
+    
+} minigl_obj;
+
+typedef struct{
+    minigl_obj **objects;
+    int object_count;
+} scene;
+
+
+engine *minigl_init(float x, float y, const char * name);
 
 
 #endif
