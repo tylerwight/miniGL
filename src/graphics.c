@@ -72,6 +72,20 @@ const char* shader_load_source(const char* file_path) {
     return buffer;
 }
 
+shader *initialize_shader(float x_size, float y_size, const char* vertex_shader_path, const char* fragment_shader_path){
+    shader *output_shader = malloc(sizeof(shader));
+
+    shader_create(output_shader, vertex_shader_path, fragment_shader_path);
+
+    view_projection_create(output_shader->view_projection, x_size, y_size);
+    shader_set_uniform_mat4f(output_shader, "uniform_view_projection", output_shader->view_projection);
+
+    int texture_slots[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    shader_set_uniform_1iv(output_shader, "u_textures", 10, texture_slots);
+
+    return output_shader;
+}
+
 void shader_set_uniform_1i(shader *shader, const char *name, int one){
     int tmp = glGetUniformLocation(shader->program, name);
     GLCall(glUseProgram(shader->program));
@@ -256,6 +270,10 @@ void renderable_object_link(renderable_object *input, vertex_array *vao, buffer 
     buffer_unbind(ibo);
     
 
+}
+
+void renderable_object_create_fromquad(renderable_object *dst, quad *data, shader *shader){
+    renderable_object_create(dst, &data->vertices_data, data->vertices_count, &data->indices_data, data->indices_count, data->attributes, data->attribute_count, shader, data->texture);
 }
 
 void renderable_object_create(renderable_object *input, void *vertices, int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture){
@@ -501,11 +519,11 @@ void renderer_draw(renderer *input){
 //////Textures////////////
 /////////////////////////
 
-void texture_load(texture *input, const char *path){
+texture *texture_load(const char *path){
+    texture *output_texture = malloc(sizeof(texture));
 
-
-    GLCall(glCreateTextures(GL_TEXTURE_2D, 1, &(input->id)));
-    GLCall(glBindTexture(GL_TEXTURE_2D, input->id));
+    GLCall(glCreateTextures(GL_TEXTURE_2D, 1, &(output_texture->id)));
+    GLCall(glBindTexture(GL_TEXTURE_2D, output_texture->id));
 
     GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));    
     GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
@@ -513,28 +531,30 @@ void texture_load(texture *input, const char *path){
     GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
     int nrChannels;
-    unsigned char *data = stbi_load(path, &(input->width), &(input->height), &nrChannels, 0);
+    unsigned char *data = stbi_load(path, &(output_texture->width), &(output_texture->height), &nrChannels, 0);
     if (data){
         GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        GLCall(glTexImage2D(GL_TEXTURE_2D, 0, format, input->width, input->height, 0, format, GL_UNSIGNED_BYTE, data));
+        GLCall(glTexImage2D(GL_TEXTURE_2D, 0, format, output_texture->width, output_texture->height, 0, format, GL_UNSIGNED_BYTE, data));
         //glGenerateMipmap(GL_TEXTURE_2D);
-        printf("Texture loaded successfully: %d x %d, channels: %d\n", input->width, input->height, nrChannels);
-        input->data = data;
+        printf("Texture loaded successfully: %d x %d, channels: %d\n", output_texture->width, output_texture->height, nrChannels);
+        output_texture->data = data;
 
     }else{
         printf("Failed to load texture\n");
     }
     GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+
+    return output_texture;
 }
 
 
-void texture_delete(texture *input){
-    GLCall(glDeleteTextures(1, &(input->id)));
+void texture_delete(texture *output_texture){
+    GLCall(glDeleteTextures(1, &(output_texture->id)));
 }
 
-void texture_bind(texture *input, int slot){
+void texture_bind(texture *output_texture, int slot){
     GLCall(glActiveTexture(GL_TEXTURE0 + slot));
-    GLCall(glBindTexture(GL_TEXTURE_2D, input->id));
+    GLCall(glBindTexture(GL_TEXTURE_2D, output_texture->id));
 }
 void texture_unbind(){
     GLCall(glBindTexture(GL_TEXTURE_2D, 0));
@@ -586,34 +606,38 @@ void vertex_print(vertex *input){;
 
 
 void quad_set_texture_slot(quad *quad, float slot){
-    quad->v0.text_slot = slot;
-    quad->v1.text_slot = slot;
-    quad->v2.text_slot = slot;
-    quad->v3.text_slot = slot;
+    quad->vertices_data.v0.text_slot = slot;
+    quad->vertices_data.v1.text_slot = slot;
+    quad->vertices_data.v2.text_slot = slot;
+    quad->vertices_data.v3.text_slot = slot;
 }
 
 
 void quad_update_pos(quad *dest, float x, float y, int size){
-    dest->v0.position[0] = x;
-    dest->v0.position[1] = y;
+    dest->vertices_data.v0.position[0] = x;
+    dest->vertices_data.v0.position[1] = y;
 
-    dest->v1.position[0] = x + size;
-    dest->v1.position[1] = y;
+    dest->vertices_data.v1.position[0] = x + size;
+    dest->vertices_data.v1.position[1] = y;
 
-    dest->v2.position[0] = x + size;
-    dest->v2.position[1] = y + size;
+    dest->vertices_data.v2.position[0] = x + size;
+    dest->vertices_data.v2.position[1] = y + size;
 
-    dest->v3.position[0] = x;
-    dest->v3.position[1] = y + size;
+    dest->vertices_data.v3.position[0] = x;
+    dest->vertices_data.v3.position[1] = y + size;
 
 }
-void quad_create(quad *dest, float x, float y, int size, color color, float texture_slot){
+
+
+quad* quad_create(float x, float y, int size, color color, texture *texture){
+    quad *output_quad = malloc(sizeof(quad));
+
     struct vertex v0;
     v0.position[0] = x;
     v0.position[1] = y;
     v0.text_coords[0] = 0.0f;
     v0.text_coords[1] = 0.0f;
-    v0.text_slot = texture_slot;
+    v0.text_slot = -1.0f;
     v0.color[0] = color.r;
     v0.color[1] = color.g;
     v0.color[2] = color.b;
@@ -624,7 +648,7 @@ void quad_create(quad *dest, float x, float y, int size, color color, float text
     v1.position[1] = y;
     v1.text_coords[0] = 1.0f;
     v1.text_coords[1] = 0.0f;
-    v1.text_slot = texture_slot;
+    v1.text_slot = -1.0f;
     v1.color[0] = color.r;
     v1.color[1] = color.g;
     v1.color[2] = color.b;
@@ -635,7 +659,7 @@ void quad_create(quad *dest, float x, float y, int size, color color, float text
     v2.position[1] = y + size;
     v2.text_coords[0] = 1.0f;
     v2.text_coords[1] = 1.0f;
-    v2.text_slot = texture_slot;
+    v2.text_slot = -1.0f;
     v2.color[0] = color.r;
     v2.color[1] = color.g;
     v2.color[2] = color.b;
@@ -646,17 +670,36 @@ void quad_create(quad *dest, float x, float y, int size, color color, float text
     v3.position[1] = y + size;
     v3.text_coords[0] = 0.0f;
     v3.text_coords[1] = 1.0f;
-    v3.text_slot = texture_slot;
+    v3.text_slot = -1.0f;
     v3.color[0] = color.r;
     v3.color[1] = color.g;
     v3.color[2] = color.b;
     v3.color[3] = color.a;
 
-    dest->v0 = v0; 
-    dest->v1 = v1;
-    dest->v2 = v2;
-    dest->v3 = v3;
+    output_quad->vertices_count = 4;
+    output_quad->indices_count = 6;
 
+    output_quad->vertices_data.v0 = v0; 
+    output_quad->vertices_data.v1 = v1;
+    output_quad->vertices_data.v2 = v2;
+    output_quad->vertices_data.v3 = v3;
+
+    output_quad->indices_data[0] = 0;
+    output_quad->indices_data[1] = 1;
+    output_quad->indices_data[2] = 2;
+    output_quad->indices_data[3] = 2;
+    output_quad->indices_data[4] = 3;
+    output_quad->indices_data[5] = 0;
+
+    output_quad->attribute_count = 4;
+    vertex_array_attribute_add(output_quad->attributes, 0, GL_FLOAT, 2); // position
+    vertex_array_attribute_add(output_quad->attributes, 1, GL_FLOAT, 2); // texture position
+    vertex_array_attribute_add(output_quad->attributes, 2, GL_FLOAT, 1); // texture slot/id
+    vertex_array_attribute_add(output_quad->attributes, 3, GL_FLOAT, 4); // color
+
+    output_quad->texture = texture;
+
+    return output_quad;
 }
 
 
@@ -678,7 +721,7 @@ void view_projection_create(mat4 dest, float x, float y){
 //////////////////////////
 //////GENERAL////////////
 /////////////////////////
-GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) ){
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y){
     GLFWwindow* window;
     if (!glfwInit()){exit(-1);}
 
@@ -707,10 +750,10 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback
             printf("Failed to initialize GLEW\n");
             exit(-1);
         }
-        //glfwSetKeyCallback(window, key_callback);
+
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 

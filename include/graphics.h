@@ -95,8 +95,20 @@ typedef struct vertex{
     float color[4];
 } vertex;
 
+
+typedef struct quad_vertices{
+    vertex v0, v1, v2, v3;
+} quad_vertices;
+
+
 typedef struct quad{
-    struct vertex v0, v1, v2, v3;
+    quad_vertices vertices_data;
+    int vertices_count;
+    GLuint indices_data[6];
+    int indices_count;
+    vertex_attrib_pointer attributes[MAX_VERTX_ATTRIBS];
+    int attribute_count;
+    texture *texture;
 } quad;
 
 
@@ -109,6 +121,11 @@ typedef struct renderer{
     mat4 model_matrix;
 } renderer;
 
+typedef struct camera{
+    mat4 view_matrix;
+    mat4 projection_matrix;
+} camera;
+
 
 
 
@@ -117,6 +134,7 @@ const char* shader_load_source(const char* file_path);
 void shader_create_program(shader *shader);
 GLuint shader_compile(GLenum type, const char* source);
 void shader_create(shader *input, const char *vertex_path, const char *fragment_path);
+shader *initialize_shader(float x_size, float y_size, const char* vertex_shader_path, const char* fragment_shader_path);
 void shader_set_uniform_1i(shader *shader, const char *name, int one);
 void shader_set_uniform_3f(shader *shader, const char *name, float one, float two, float three);
 void shader_set_uniform_4f(shader *shader, const char *name, float one, float two, float three, float four);
@@ -145,6 +163,7 @@ void vertex_array_delete(vertex_array *input);
 void renderable_object_link(renderable_object *input, vertex_array *vao, buffer *vbo, buffer *ibo, shader *shader);
 void renderable_object_draw(renderable_object *input);
 void renderable_object_delete(renderable_object *input);
+void renderable_object_create_fromquad(renderable_object *dst, quad *data, shader *shader);
 void renderable_object_create(renderable_object *input, void *vertices, int vertices_count, GLuint indices[], int indices_count, vertex_attrib_pointer attributes[], int attribute_count, shader *shader, texture *texture);
 void renderable_object_print(renderable_object *input, const char* name);
 void renderable_object_update_vertices(renderable_object *input, void *data, int vertices_count);
@@ -160,7 +179,7 @@ void renderer_draw(renderer *input);
 
 
 //textures
-void texture_load(texture *input, const char *path);
+texture *texture_load(const char *path);
 void texture_delete(texture *input);
 void texture_bind(texture *input, int slot);
 void texture_unbind();
@@ -171,7 +190,7 @@ void color_set(color* dest, float r, float g, float b, float a);
 //vertices setup
 void vertex_print(vertex *input);
 void quad_update_pos(quad *dest, float x, float y, int size);
-void quad_create(quad *dest, float x, float y, int size, color color, float texture_id);
+quad* quad_create(float x, float y, int size, color color, texture *texture);
 void vertices_print(vertex *input, int count);
 
 void indices_print(void *data, int indices_count);
@@ -184,7 +203,7 @@ void view_projection_create(mat4 dest, float x, float y);
 
 
 
-GLFWwindow* setup_opengl(int resolution_x, int resolution_y, void (*key_callback)(GLFWwindow*, int, int, int, int) );
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y);
 void opengl_set_default_state();
 
 bool GLLogCall(const char* function, const char* file, int line);

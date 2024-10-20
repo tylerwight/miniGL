@@ -1,41 +1,22 @@
 #include "minigl.h"
 
 
-void process_input(engine *engine, renderable_object *object){
-    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_ESCAPE)) {
-        glfwSetWindowShouldClose(engine->window, GLFW_TRUE);
-    }
+//todo
+// implement audio
+// change renderer to "batch" and only have one renderer that contains batches
+// great minigl object can contain audio
+//camera for view projection
 
-    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_W)) {
-        renderable_object_translate(object, 0.0f, 0.5f);
-    }
-    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_A)) {
-        renderable_object_translate(object, -0.5f, 0.0f);
-    }
-    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_S)) {
-        renderable_object_translate(object, 0.0f, -0.5f);
-    }
-    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_D)) {
-        renderable_object_translate(object, 0.5f, 0.0f);
-    }
-    
-}
+void process_input(engine *engine, renderable_object *object);
 
 int main(){
     engine test_app = {0};
     GLFWwindow* window;
-    window = setup_opengl(1024,768, key_callback);
+    window = setup_opengl(1024,768);
     test_app.window = window;
     
-    
     //setup shaders
-    shader main_shader;
-    view_projection_create(main_shader.view_projection, 1024.0f, 768.0f);
-    shader_create(&main_shader, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
-    shader_set_uniform_mat4f(&main_shader, "uniform_view_projection", main_shader.view_projection);
-    int texture_slots[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    shader_set_uniform_1iv(&main_shader, "u_textures", 10, texture_slots);
-    
+    shader *main_shader = initialize_shader(1024.0f, 768.0f, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
 
     //create some colors
     color red, green, blue;
@@ -45,44 +26,21 @@ int main(){
     
 
     //load textures
-    texture texture_head;
-    texture texture_body;
-    texture_load(&texture_head, "assets/snek_head.png");
-    texture_load(&texture_body, "assets/snek_body1.png");
-    
+    texture *texture_head = texture_load("assets/snek_head.png");
+    texture *texture_body = texture_load("assets/snek_body1.png");
 
     //Create quad vertex + index data
-    int vertices_count = 4;
-    quad quad_red, quad_green, quad_blue, quad_test;
-
-    quad_create(&quad_red, 100.0f, 150.0f, 150.0f, red, -1.0f);
-    quad_create(&quad_green, 400.0f, 150.0f, 100.0f, green, -1.0f);
-    quad_create(&quad_blue, 700.0f, 150.0f, 50.0f, blue, -1.0f);
-    quad_create(&quad_test, 700.0f, 350.0f, 50.0f, blue, -1.0f);
-    
-
-    int indicies_count = 6;
-    GLuint indices[] = {
-        0, 1, 2,
-        2, 3, 0
-    };
-
-    
-    // new attributes testing
-    int attribute_count = 4;
-    vertex_attrib_pointer attributes[attribute_count];
-    vertex_array_attribute_add(attributes, 0, GL_FLOAT, 2); // position
-    vertex_array_attribute_add(attributes, 1, GL_FLOAT, 2); // texture position
-    vertex_array_attribute_add(attributes, 2, GL_FLOAT, 1); // texture slot/id
-    vertex_array_attribute_add(attributes, 3, GL_FLOAT, 4); // color
-
+    quad *quad_red = quad_create(100.0f, 150.0f, 150.0f, red, NULL);
+    quad *quad_green = quad_create(400.0f, 150.0f, 100.0f, green, texture_head);
+    quad *quad_blue = quad_create(700.0f, 150.0f, 50.0f, blue, NULL);
+    quad *quad_test = quad_create(700.0f, 350.0f, 50.0f, blue, texture_body);
 
     // create some objects
     renderable_object square_red, square_green, square_blue, square_test;
-    renderable_object_create(&square_red, &quad_red, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, NULL);
-    renderable_object_create(&square_green, &quad_green, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_head);
-    renderable_object_create(&square_blue, &quad_blue, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, NULL);
-    renderable_object_create(&square_test, &quad_test, vertices_count, indices, indicies_count, attributes, attribute_count, &main_shader, &texture_body);
+    renderable_object_create_fromquad(&square_red, quad_red, main_shader);
+    renderable_object_create_fromquad(&square_green, quad_green, main_shader);
+    renderable_object_create_fromquad(&square_blue, quad_blue, main_shader);
+    renderable_object_create_fromquad(&square_test, quad_test, main_shader);
 
     //link them to a renderer
     renderer *game_renderer = calloc(1, sizeof(renderer));
@@ -114,7 +72,7 @@ int main(){
         update_input(&(test_app.engine_input_manager));
         glfwPollEvents();
         process_input(&test_app, &square_test);
-        
+
         nuklear_debug_menu_draw(window, &debug_menu, &debug_menu_data);
         //renderer_translate(game_renderer, 0.0f, 0.5f);
         
@@ -148,7 +106,22 @@ int main(){
 
 
 
+void process_input(engine *engine, renderable_object *object){
+    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_ESCAPE)) {
+        glfwSetWindowShouldClose(engine->window, GLFW_TRUE);
+    }
 
-
-
-
+    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_W)) {
+        renderable_object_translate(object, 0.0f, 0.5f);
+    }
+    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_A)) {
+        renderable_object_translate(object, -0.5f, 0.0f);
+    }
+    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_S)) {
+        renderable_object_translate(object, 0.0f, -0.5f);
+    }
+    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_D)) {
+        renderable_object_translate(object, 0.5f, 0.0f);
+    }
+    
+}
