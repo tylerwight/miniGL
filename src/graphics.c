@@ -77,14 +77,12 @@ shader *initialize_shader(float x_size, float y_size, const char* vertex_shader_
 
     shader_create(output_shader, vertex_shader_path, fragment_shader_path);
 
-    view_projection_create(output_shader->view_projection, x_size, y_size);
-    shader_set_uniform_mat4f(output_shader, "uniform_view_projection", output_shader->view_projection);
-
     int texture_slots[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     shader_set_uniform_1iv(output_shader, "u_textures", 10, texture_slots);
 
     return output_shader;
 }
+
 
 void shader_set_uniform_1i(shader *shader, const char *name, int one){
     int tmp = glGetUniformLocation(shader->program, name);
@@ -345,8 +343,16 @@ void renderable_object_translate(renderable_object *input, float x, float y){
 
 
 void renderable_object_draw(renderable_object *input){
-    glUseProgram(input->shader->program);
+    static GLint current_program = 0;
+    current_program = input->shader->program;
+
+    if (current_program != input->shader->program) {
+        printf("Changing Shader\n");
+        glUseProgram(input->shader->program);
+    }
+    //printf("drawing RA, setting model matrix\n");
     shader_set_uniform_mat4f(&input->shader->program, "uniform_model_matrix", input->model_matrix);
+
     vertex_array_bind((input->vao));
     if (input->texture != NULL){
         glBindTextureUnit(1, input->texture->id);// assign texture to slot 1
@@ -374,23 +380,22 @@ void renderable_object_update_vertices(renderable_object *input, void *data, int
 
 
 //////////////////////////
-//////Renderer////////////
+//////Renderable Batch////////////
 /////////////////////////
 
 
-void renderer_attach_object(renderer *input, renderable_object *object){
+void renderable_batch_attach_object(renderable_batch *input, renderable_object *object){
     input->object_count += 1;
 
-    renderable_object *old_data = input->objects;
-    renderable_object *new_data  = calloc(input->object_count, sizeof(renderable_object));
+    renderable_object **old_data = input->objects;
+    renderable_object **new_data  = calloc(input->object_count, sizeof(renderable_object*));
 
     if (input->object_count > 1){
-        memcpy(new_data, old_data, sizeof(renderable_object) * input->object_count - 1);
-        new_data[input->object_count-1] = *object;
-    } else{
-        new_data[0] = *object;
+        memcpy(new_data, old_data, sizeof(renderable_object*) * (input->object_count - 1));
+
     }
 
+    new_data[input->object_count - 1] = object;
     input->objects = new_data;
 
 
@@ -400,67 +405,94 @@ void renderer_attach_object(renderer *input, renderable_object *object){
     
 }
 
-void renderer_update_data(renderer *input){
+void renderable_batch_update_data(renderable_batch *input){
     if (input->object_count == 0){
-        printf("No renderable objects attached to renderer\n");
+        printf("No renderable objects attached to renderable_batch\n");
         return;
     }
+
     vertex_array_bind(input->vao);
 
     int vertex_data_length = 0;
     int index_data_length = 0;
 
-    for (int i = 0; i < input->object_count; i++){
-        vertex_data_length += input->objects[i].vbo->length;
-        index_data_length += input->objects[i].ibo->length;
+    for (int i = 0; i < input->object_count; i++) {
+        vertex_data_length += input->objects[i]->vbo->length;
+        index_data_length += input->objects[i]->ibo->length;
 
-        if (input->objects[i].texture != NULL){
-            int slot = i+1;
-            glBindTextureUnit(slot, input->objects[i].texture->id);
-            buffer_update_text_slot((input->objects[i].vbo), slot);
-        } else{
-            buffer_update_text_slot((input->objects[i].vbo), 0);
+        if (input->objects[i]->texture != NULL) {
+            int slot = -1;
+
+            // Search if the texture has already been assigned to a slot
+            for (int j = 0; j < input->used_slots; j++) {
+                if (input->texture_slots[j] == input->objects[i]->texture) {
+                    slot = j + 1;  // Found a previously used slot
+                    break;
+                }
+            }
+
+            // If the texture was not found in existing slots, assign a new slot
+            if (slot == -1) {
+                slot = input->used_slots + 1;  // Assign next available slot
+                input->texture_slots[slot] = input->objects[i]->texture;
+                input->used_slots++;  // Increment the used slot count
+            }
+            
+            printf("binding texture %d to slot: %d\n", input->objects[i]->texture->id, slot);
+            printf("updating object %d vertex text slot to %d\n", i, slot);
+            glBindTextureUnit(slot, input->objects[i]->texture->id);
+            buffer_update_text_slot(input->objects[i]->vbo, slot);
+        } else {
+            printf("setting object %d texture slot to 0\n", i);
+            buffer_update_text_slot(input->objects[i]->vbo, 0);
         }
     }
-
 
     void *vertex_data = malloc(vertex_data_length);
     void *index_data = malloc(index_data_length);
     if (vertex_data == NULL || index_data == NULL) {
-        printf("falled to allocate vert or index data\n");
+        printf("Failed to allocate vertex or index data\n");
+        return;
     }
-    
-    //populate the vertex and index data from every renderable object in the renderer
+
     int vertex_offset = 0;
-    int index_offset = 0;
+    int index_offset = 0;   
+    int total_vertices = 0;
 
-    for (int i = 0; i < input->object_count; i++){
-        GLuint *tmp_indices = malloc(input->objects[i].ibo->length);
-        memcpy(tmp_indices, input->objects[i].ibo->data, input->objects[i].ibo->length);
+    // Populate the vertex and index data from each renderable object
+    for (int i = 0; i < input->object_count; i++) {
+        renderable_object *object = input->objects[i];
 
-        for (unsigned int j = 0; j < (input->objects[i].ibo->length / sizeof(GLuint)); j++){
-            tmp_indices[j] += 4*i;
+        // Copy vertex data into the batch's vertex buffer
+        memcpy((char *)vertex_data + vertex_offset, object->vbo->data, object->vbo->length);
+        vertex_offset += object->vbo->length;
+
+        // Copy and adjust index data based on the current total vertex offset
+        GLuint *tmp_indices = malloc(object->ibo->length);
+        memcpy(tmp_indices, object->ibo->data, object->ibo->length);
+
+        // Adjust each index by the total number of vertices added so far
+        for (unsigned int j = 0; j < object->ibo->length / sizeof(GLuint); j++) {
+            tmp_indices[j] += total_vertices;
         }
 
-        memcpy((char *)vertex_data + vertex_offset, input->objects[i].vbo->data, input->objects[i].vbo->length);
-        memcpy((char *)index_data + index_offset, tmp_indices, input->objects[i].ibo->length);
-        vertex_offset += input->objects[i].vbo->length;
-        index_offset += input->objects[i].ibo->length;
+        // Copy the adjusted indices into the batch's index buffer
+        memcpy((char *)index_data + index_offset, tmp_indices, object->ibo->length);
+        index_offset += object->ibo->length;
 
-
+        total_vertices += object->vbo->length / sizeof(vertex); // Increment total vertex count
         free(tmp_indices);
     }
 
+    // Update the buffers with the new data
     buffer_set_data(input->vbo, vertex_data, vertex_data_length);
     buffer_set_data(input->ibo, index_data, index_data_length);
 
-
     free(vertex_data);
     free(index_data);
-
 }
 
-void renderer_initialize(renderer *input){
+void renderable_batch_initialize(renderable_batch *input){
     glm_mat4_identity(input->model_matrix);
     vertex_array *VAO = calloc(1, sizeof(vertex_array));
     buffer *VBO = calloc(1, sizeof(buffer));
@@ -474,8 +506,8 @@ void renderer_initialize(renderer *input){
     int vertex_data_length = 0;
     int index_data_length = 0;
     for (int i = 0; i < input->object_count; i++){
-        vertex_data_length += input->objects[i].vbo->length;
-        index_data_length += input->objects[i].ibo->length;
+        vertex_data_length += input->objects[i]->vbo->length;
+        index_data_length += input->objects[i]->ibo->length;
     }
 
     vertex_array_bind((input->vao));
@@ -486,8 +518,8 @@ void renderer_initialize(renderer *input){
     buffer_bind((input->vbo));
     buffer_bind((input->ibo));
 
-    vertex_attrib_pointer *tmp_attributes = &(input->objects[0].vao->attributes);
-    int tmp_attribute_count = input->objects[0].vao->attribute_count;
+    vertex_attrib_pointer *tmp_attributes = &(input->objects[0]->vao->attributes);
+    int tmp_attribute_count = input->objects[0]->vao->attribute_count;
     
     for (int i=0; i < tmp_attribute_count; i++){
         GLCall(glVertexAttribPointer(tmp_attributes[i].index, tmp_attributes[i].size, tmp_attributes[i].type, tmp_attributes[i].normalized, tmp_attributes[i].stride, tmp_attributes[i].pointer));
@@ -496,21 +528,123 @@ void renderer_initialize(renderer *input){
 
 }
 
-void renderer_translate(renderer *input, float x, float y){
+void renderable_batch_translate(renderable_batch *input, float x, float y){
     vec3 modeltranslation = {x, y, 0.0f};
     glm_translate(input->model_matrix, modeltranslation);
 }
 
-void renderer_draw(renderer *input){
-    glUseProgram(input->objects[0].shader->program);
-    shader_set_uniform_mat4f(&input->objects[0].shader->program, "uniform_model_matrix", input->model_matrix);   
+void renderable_batch_draw(renderable_batch *input){
+    static GLint current_program = 0;
+    current_program = input->objects[0]->shader->program;
+
+    if (current_program != input->objects[0]->shader->program) {
+        printf("Changing Shader\n");
+        
+    }
+    glUseProgram(input->objects[0]->shader->program);
+    
+    shader_set_uniform_mat4f(&input->objects[0]->shader->program, "uniform_model_matrix", input->model_matrix); 
+
     vertex_array_bind((input->vao));
     buffer_bind(input->vbo);
     buffer_bind(input->ibo);
+
+    for (int i = 0; i < input->used_slots; i++) {
+        glBindTextureUnit(i + 1, input->texture_slots[i+1]->id);  // Bind textures to slots
+    }
     
     GLCall(glDrawElements(GL_TRIANGLES, input->ibo->length/sizeof(GLuint), GL_UNSIGNED_INT, 0));
     vertex_array_unbind((input->vao));
 }
+
+//////////////////////////////
+///////////RENDERER///////////
+/////////////////////////////
+
+
+void renderer_attach_object(renderer *dst, renderable_object *object){
+    dst->object_count += 1;
+
+    renderable_object **old_object_data = dst->objects;
+    renderable_object **new_object_data = calloc(dst->object_count, sizeof(renderable_object*));
+
+    if (dst->object_count > 1) {
+        memcpy(new_object_data, old_object_data, sizeof(renderable_object*) * (dst->object_count - 1));
+    }
+
+    new_object_data[dst->object_count - 1] = object;
+    dst->objects = new_object_data;
+
+    if (old_object_data != NULL) {
+        free(old_object_data);
+    }
+}
+
+void renderer_attach_batch(renderer *dst, renderable_batch *batch){
+    dst->batch_count += 1;
+
+    renderable_batch **old_batch_data = dst->batches;
+    renderable_batch **new_batch_data = calloc(dst->batch_count, sizeof(renderable_batch*));
+
+    if (dst->batch_count > 1) {
+        memcpy(new_batch_data, old_batch_data, sizeof(renderable_batch*) * (dst->batch_count - 1));
+    }
+
+    new_batch_data[dst->batch_count - 1] = batch;
+    dst->batches = new_batch_data;
+
+    if (old_batch_data != NULL) {
+        free(old_batch_data);
+    }
+}
+
+
+void renderer_draw(renderer *input){
+
+    if (input->current_shader == NULL && input->shader_unchanged == 0){
+        if (input->batch_count > 0){
+            input->current_shader = input->batches[0]->objects[0]->shader;
+            printf("no current shader, setting shader\n");
+        }
+        if (input->object_count > 0 && input->batch_count == 0){
+            input->current_shader = input->objects[0]->shader;
+            printf("no current shader, setting shader\n");
+        }
+        input->shader_unchanged = 1;
+    }
+
+    if (input->camera_unchanged == 0 || input->shader_unchanged == 0){
+        printf("setting camera\n");
+        shader_set_uniform_mat4f(input->current_shader, "uniform_projection", input->cam.projection_matrix);
+        shader_set_uniform_mat4f(input->current_shader, "uniform_view", input->cam.view_matrix);
+        input->camera_unchanged = 1;
+    }
+
+    for(int i = 0; i < input->batch_count; i++){
+        renderable_batch_draw(input->batches[i]);
+    }
+    for(int i = 0; i < input->object_count; i++){
+        renderable_object_draw(input->objects[i]);
+    }
+}
+
+
+
+
+//camera
+
+
+camera camera_create(float x, float y){
+    camera cam;
+
+    glm_ortho(0.0f, x, 0.0f, y, -1.0f, 1.0f, cam.projection_matrix);
+
+    glm_mat4_identity(cam.view_matrix);
+
+    return cam;
+}
+
+
 
 
 
@@ -721,7 +855,7 @@ void view_projection_create(mat4 dest, float x, float y){
 //////////////////////////
 //////GENERAL////////////
 /////////////////////////
-GLFWwindow* setup_opengl(int resolution_x, int resolution_y){
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y, const char *name){
     GLFWwindow* window;
     if (!glfwInit()){exit(-1);}
 
@@ -731,7 +865,7 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y){
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
 
-        window = glfwCreateWindow(resolution_x, resolution_y, "OpenGL_Renderer", NULL, NULL);
+        window = glfwCreateWindow(resolution_x, resolution_y, name, NULL, NULL);
         if (!window){
             glfwTerminate();
             exit(-1);

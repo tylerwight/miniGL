@@ -112,20 +112,33 @@ typedef struct quad{
 } quad;
 
 
-typedef struct renderer{
-    renderable_object *objects;
+typedef struct renderable_batch{
+    renderable_object **objects;
     int object_count;
     vertex_array *vao;
     buffer *vbo;
     buffer *ibo;
     mat4 model_matrix;
-} renderer;
+    texture *texture_slots[MAX_TEXTURE_SLOTS];
+    int used_slots;
+} renderable_batch;
 
 typedef struct camera{
     mat4 view_matrix;
     mat4 projection_matrix;
 } camera;
 
+
+typedef struct renderer{
+    renderable_object **objects;
+    int object_count;
+    renderable_batch **batches;
+    int batch_count;
+    camera cam;
+    int camera_unchanged;
+    shader *current_shader;
+    int shader_unchanged;
+} renderer;
 
 
 
@@ -170,13 +183,23 @@ void renderable_object_update_vertices(renderable_object *input, void *data, int
 void renderable_object_translate(renderable_object *input, float x, float y);
 
 
+//renderable batch
+void renderable_batch_update_data(renderable_batch *input);
+void renderable_batch_attach_object(renderable_batch *input, renderable_object *object);
+void renderable_batch_initialize(renderable_batch *input);
+void renderable_batch_translate(renderable_batch *input, float x, float y);
+void renderable_batch_draw(renderable_batch *input);
+
+
 //renderer
-void renderer_update_data(renderer *input);
-void renderer_attach_object(renderer *input, renderable_object *object);
-void renderer_initialize(renderer *input);
-void renderer_translate(renderer *input, float x, float y);
+void renderer_attach_object(renderer *dst, renderable_object *object);
+void renderer_attach_batch(renderer *dst, renderable_batch *batch);
+
 void renderer_draw(renderer *input);
 
+
+//camera
+camera camera_create(float x, float y);
 
 //textures
 texture *texture_load(const char *path);
@@ -203,7 +226,7 @@ void view_projection_create(mat4 dest, float x, float y);
 
 
 
-GLFWwindow* setup_opengl(int resolution_x, int resolution_y);
+GLFWwindow* setup_opengl(int resolution_x, int resolution_y, const char *name);
 void opengl_set_default_state();
 
 bool GLLogCall(const char* function, const char* file, int line);
