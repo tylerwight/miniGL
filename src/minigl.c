@@ -13,7 +13,10 @@ minigl_engine *minigl_init(float x, float y, const char * name){
 
     initialize_input(window);
     glfwSetWindowUserPointer(window, output_engine);
-    
+
+
+    output_engine->engine_renderer.cam = camera_create(1024.0f, 768.0f);
+    output_engine->engine_renderer.current_shader = NULL; 
     return output_engine;
 }
 
@@ -38,6 +41,15 @@ minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_p
 
 }
 
+minigl_obj_set_position(minigl_obj *obj, float x_pos, float y_pos){
+    float x_delta = x_pos - obj->position[0];
+    float y_delta = y_pos - obj->position[1];
+    renderable_object_translate(obj->renderable, x_delta, y_delta);
+    obj->position[0] = x_pos;
+    obj->position[1] = y_pos;
+}
+
+
 ////////////////////
 ////////shaders//////
 ////////////////////
@@ -49,6 +61,11 @@ void minigl_shader_load(minigl_engine *engine, const char* vertex_shader_path, c
 
     engine->engine_renderer.shaders[engine->engine_renderer.shader_count] = new_shader;
     engine->engine_renderer.shader_count++;
+
+
+    shader_set_uniform_mat4f(new_shader, "uniform_projection", engine->engine_renderer.cam.projection_matrix);
+    shader_set_uniform_mat4f(new_shader, "uniform_view", engine->engine_renderer.cam.view_matrix);
+
 }
 
 shader *minigl_shader_get_by_name(minigl_engine *engine, const char* name) {
@@ -119,6 +136,7 @@ void minigl_engine_attach_scene(minigl_engine *engine, minigl_scene *scene) {
 }
 
 
+//engine
 void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene) {
     // Loop through all objects in the scene
     for (int i = 0; i < scene->object_count; i++) {
@@ -126,3 +144,10 @@ void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene) {
         renderable_object_draw(obj->renderable);
     }
 }
+
+
+
+void minigl_draw(minigl_engine *engine){
+    minigl_scene_draw(engine, engine->scenes[engine->current_scene]);
+}
+

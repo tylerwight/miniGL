@@ -3,8 +3,10 @@
 //todo
 // implement audio
 // great minigl object can contain audio
+//renderer_draw_objects (renderable_objects[], count) -- it does batching/instancing on it's own
+//local xy coords compared to model matrix 
 
-void process_input(minigl_engine *minigl_engine, renderable_object *object);
+void process_input(minigl_engine *minigl_engine, minigl_obj *obj);
 
 int main(){
     minigl_engine *myapp = minigl_init(1024.0f, 768.0f, "miniGL");
@@ -20,19 +22,15 @@ int main(){
     minigl_texture_load(myapp, "assets/snek_body1.png", "body1");
 
     minigl_obj *test = minigl_obj_create_quad(myapp, 100.0f, 100.0f, 50.0f, blue, "head", "mainshader");
+    minigl_obj *test2 = minigl_obj_create_quad(myapp, 150.0f, 100.0f, 50.0f, blue, "body1", "mainshader");
 
     minigl_scene *scene = minigl_scene_create();
-    minigl_scene_attach_object(scene, test);
 
+    minigl_scene_attach_object(scene, test);
+    minigl_scene_attach_object(scene, test2);
     minigl_engine_attach_scene(myapp, scene);
 
-    myapp->engine_renderer.cam = camera_create(1024.0f, 768.0f);
-    myapp->engine_renderer.current_shader = NULL;
-    shader *mainshader = minigl_shader_get_by_name(myapp, "mainshader");
-    shader_set_uniform_mat4f(mainshader, "uniform_projection", myapp->engine_renderer.cam.projection_matrix);
-    shader_set_uniform_mat4f(mainshader, "uniform_view", myapp->engine_renderer.cam.view_matrix);
 
-    
 
     double previousTime = glfwGetTime();
     int frameCount = 0;
@@ -44,9 +42,8 @@ int main(){
 
         update_input(&(myapp->engine_input_manager));
         glfwPollEvents();
-
-        //minigl_scene_draw(myapp, scene);
-        renderable_object_draw(myapp->scenes[0]->objects[0]->renderable);
+        process_input(myapp, test);
+        minigl_draw(myapp);
 
 
         double currentTime = glfwGetTime();
@@ -73,23 +70,25 @@ int main(){
 
 
 
-void process_input(minigl_engine *minigl_engine, renderable_object *object){
+void process_input(minigl_engine *minigl_engine, minigl_obj *obj){
+    static float dt = 0.0f;
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_ESCAPE)) {
         glfwSetWindowShouldClose(minigl_engine->window, GLFW_TRUE);
     }
 
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W)) {
-        renderable_object_translate(object, 0.0f, 0.5f);
+        minigl_obj_set_position(obj, 200.0f+dt, 200.0f+dt);
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
-        renderable_object_translate(object, -0.5f, 0.0f);
+        minigl_obj_set_position(obj, 200.0f, 200.0f);
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
-        renderable_object_translate(object, 0.0f, -0.5f);
+        minigl_obj_set_position(obj, 512.0f, 384.0f);
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
-        renderable_object_translate(object, 0.5f, 0.0f);
     }
+
+    dt += 0.1f;
     
 }
 
