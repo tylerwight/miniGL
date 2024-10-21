@@ -28,7 +28,7 @@ dispatch_event(event* event){
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    engine *ctx_engine = glfwGetWindowUserPointer(window);
+    minigl_engine *ctx_engine = glfwGetWindowUserPointer(window);
     input_manager *ctx_input_manager = &(ctx_engine->engine_input_manager);
 
     if (key >= 0 && key < MAX_KEYS) {
@@ -45,7 +45,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    engine *ctx_engine = glfwGetWindowUserPointer(window);
+    minigl_engine *ctx_engine = glfwGetWindowUserPointer(window);
     input_manager *ctx_input_manager = &ctx_engine->engine_input_manager;
 
     if (button >= 0 && button < MAX_MOUSE_BUTTONS) {
@@ -58,7 +58,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-    engine *ctx_engine = glfwGetWindowUserPointer(window);
+    minigl_engine *ctx_engine = glfwGetWindowUserPointer(window);
     input_manager *ctx_input_manager = &ctx_engine->engine_input_manager;
 
     ctx_input_manager->mouse_x = xpos;
@@ -67,7 +67,7 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
 
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-    engine *ctx_engine = glfwGetWindowUserPointer(window);
+    minigl_engine *ctx_engine = glfwGetWindowUserPointer(window);
     input_manager *ctx_input_manager = &ctx_engine->engine_input_manager;
 
     ctx_input_manager->scroll_x = xoffset;

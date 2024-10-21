@@ -33,7 +33,7 @@ typedef struct shader {
     GLuint program;
     const char* vertex_source;
     const char* fragment_source;
-    mat4 view_projection;
+    char name[32];
 } shader;
 
 
@@ -68,7 +68,7 @@ typedef struct texture {
     int width;
     int height;
     unsigned char* data;
-    char *path;
+    char name[32];
 } texture;
 
 typedef struct renderable_object {
@@ -136,8 +136,14 @@ typedef struct renderer{
     int batch_count;
     camera cam;
     int camera_unchanged;
-    shader *current_shader;
+    shader **shaders;
+    int shader_count;
+    int current_shader;
     int shader_unchanged;
+
+    texture **textures;
+    int texture_count;
+
 } renderer;
 
 

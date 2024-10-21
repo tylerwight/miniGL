@@ -4,10 +4,101 @@
 // implement audio
 // great minigl object can contain audio
 
-void process_input(engine *engine, renderable_object *object);
+void process_input(minigl_engine *minigl_engine, renderable_object *object);
 
 int main(){
-    engine *myapp = minigl_init(1024.0f, 768.0f, "miniGL");
+    minigl_engine *myapp = minigl_init(1024.0f, 768.0f, "miniGL");
+
+    //create some colors
+    color red, green, blue;
+    color_set(&red, 1.0f, 0.0f, 0.0f, 1.0f);
+    color_set(&green, 0.0f, 1.0f, 0.0f, 1.0f);
+    color_set(&blue, 0.0f, 0.0f, 1.0f, 1.0f);
+
+    minigl_shader_load(myapp, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", "mainshader");
+    minigl_texture_load(myapp, "assets/snek_head.png", "head");
+    minigl_texture_load(myapp, "assets/snek_body1.png", "body1");
+
+    minigl_obj *test = minigl_obj_create_quad(myapp, 100.0f, 100.0f, 50.0f, blue, "head", "mainshader");
+
+    minigl_scene *scene = minigl_scene_create();
+    minigl_scene_attach_object(scene, test);
+
+    minigl_engine_attach_scene(myapp, scene);
+
+    myapp->engine_renderer.cam = camera_create(1024.0f, 768.0f);
+    myapp->engine_renderer.current_shader = NULL;
+    shader *mainshader = minigl_shader_get_by_name(myapp, "mainshader");
+    shader_set_uniform_mat4f(mainshader, "uniform_projection", myapp->engine_renderer.cam.projection_matrix);
+    shader_set_uniform_mat4f(mainshader, "uniform_view", myapp->engine_renderer.cam.view_matrix);
+
+    
+
+    double previousTime = glfwGetTime();
+    int frameCount = 0;
+
+    //main loop
+    while (!glfwWindowShouldClose(myapp->window)){ // game loop
+        glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        update_input(&(myapp->engine_input_manager));
+        glfwPollEvents();
+
+        //minigl_scene_draw(myapp, scene);
+        renderable_object_draw(myapp->scenes[0]->objects[0]->renderable);
+
+
+        double currentTime = glfwGetTime();
+        frameCount++;
+        if (currentTime - previousTime >= 1.0) {
+            // Calculate FPS
+            int fps = frameCount;
+            char title[256];
+            snprintf(title, sizeof(title), "miniGL - [FPS: %d]", fps);
+            glfwSetWindowTitle(myapp->window, title);
+            frameCount = 0;
+            previousTime = currentTime;
+        }
+
+
+        glfwSwapBuffers(myapp->window);
+    }
+
+
+    //renderable_object_delete(&square_red);
+    glfwTerminate();
+    return 0;
+}
+
+
+
+void process_input(minigl_engine *minigl_engine, renderable_object *object){
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_ESCAPE)) {
+        glfwSetWindowShouldClose(minigl_engine->window, GLFW_TRUE);
+    }
+
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W)) {
+        renderable_object_translate(object, 0.0f, 0.5f);
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
+        renderable_object_translate(object, -0.5f, 0.0f);
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
+        renderable_object_translate(object, 0.0f, -0.5f);
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
+        renderable_object_translate(object, 0.5f, 0.0f);
+    }
+    
+}
+
+
+
+
+/*
+int main(){
+    minigl_engine *myapp = minigl_init(1024.0f, 768.0f, "miniGL");
 
     //setup shaders
     shader *main_shader = initialize_shader(1024.0f, 768.0f, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
@@ -101,24 +192,4 @@ int main(){
     return 0;
 }
 
-
-
-void process_input(engine *engine, renderable_object *object){
-    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_ESCAPE)) {
-        glfwSetWindowShouldClose(engine->window, GLFW_TRUE);
-    }
-
-    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_W)) {
-        renderable_object_translate(object, 0.0f, 0.5f);
-    }
-    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_A)) {
-        renderable_object_translate(object, -0.5f, 0.0f);
-    }
-    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_S)) {
-        renderable_object_translate(object, 0.0f, -0.5f);
-    }
-    if (is_key_down(&engine->engine_input_manager, GLFW_KEY_D)) {
-        renderable_object_translate(object, 0.5f, 0.0f);
-    }
-    
-}
+*/

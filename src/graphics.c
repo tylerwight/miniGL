@@ -73,7 +73,7 @@ const char* shader_load_source(const char* file_path) {
 }
 
 shader *initialize_shader(float x_size, float y_size, const char* vertex_shader_path, const char* fragment_shader_path){
-    shader *output_shader = malloc(sizeof(shader));
+    shader *output_shader = calloc(1, sizeof(shader));
 
     shader_create(output_shader, vertex_shader_path, fragment_shader_path);
 
@@ -82,6 +82,10 @@ shader *initialize_shader(float x_size, float y_size, const char* vertex_shader_
 
     return output_shader;
 }
+
+
+
+
 
 
 void shader_set_uniform_1i(shader *shader, const char *name, int one){
