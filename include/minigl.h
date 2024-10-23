@@ -19,7 +19,6 @@ typedef struct{
     float velocity[2];
     renderable_object *renderable;
     minigl_obj_type type;
-    
 } minigl_obj;
 
 typedef struct{
@@ -36,6 +35,7 @@ typedef struct {
     minigl_scene **scenes;
     int scene_count;
     int current_scene;
+    audio_manager *audio_manager; 
 } minigl_engine;
 
 

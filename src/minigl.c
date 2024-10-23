@@ -39,6 +39,7 @@ minigl_obj_set_position(minigl_obj *obj, float x_pos, float y_pos){
 }
 
 
+
 ////////////////////
 ////////shaders//////
 ////////////////////
@@ -150,6 +151,7 @@ minigl_engine *minigl_init(float x, float y, const char * name){
 
     output_engine->engine_renderer.cam = camera_create(1024.0f, 768.0f);
     output_engine->engine_renderer.current_shader = NULL; 
+    output_engine->audio_manager = audio_manager_init(); 
     return output_engine;
 }
 

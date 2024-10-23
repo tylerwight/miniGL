@@ -19,9 +19,9 @@ int main(){
     minigl_texture_load(myapp, "assets/snek_head.png", "head");
     minigl_texture_load(myapp, "assets/snek_body1.png", "body1");
 
-    minigl_obj *square_blue = minigl_obj_create_quad(myapp, 100.0f, 100.0f, 50.0f, blue, NULL, "mainshader", MINIGL_DYNAMIC);
-    minigl_obj *body1 = minigl_obj_create_quad(myapp, 150.0f, 100.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
-    minigl_obj *body2 = minigl_obj_create_quad(myapp, 250.0f, 300.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
+    minigl_obj *square_blue = minigl_obj_create_quad(myapp, 500.0f, 350.0f, 50.0f, blue, NULL, "mainshader", MINIGL_DYNAMIC);
+    minigl_obj *body1 = minigl_obj_create_quad(myapp, 150.0f, 300.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
+    minigl_obj *body2 = minigl_obj_create_quad(myapp, 750.0f, 300.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
 
     minigl_scene *scene = minigl_scene_create();
 
@@ -30,10 +30,16 @@ int main(){
     minigl_scene_attach_object(scene, body2);
     minigl_engine_attach_scene(myapp, scene);
 
+    audio_manager_load_sound(myapp->audio_manager, "assets/example.wav", "test");
+    audio_source *test = audio_manager_create_source(myapp->audio_manager, "test");
 
+    audio_manager_play_source(test);
 
-    double prev_time = glfwGetTime();
+    double current_time = glfwGetTime();
+    double prev_time = current_time;
     int frame_count = 0;
+    double deltaTime = 0.0;
+
     double fps_last_time = 0;
 
     //main loop
@@ -47,6 +53,7 @@ int main(){
 
         double current_time = glfwGetTime();
         double delta_time = current_time - prev_time;
+        prev_time = current_time;
 
 
         minigl_process_movement(myapp, delta_time);
@@ -78,25 +85,41 @@ int main(){
 
 
 void process_input(minigl_engine *minigl_engine, minigl_obj *obj){
+        float friction = 0.1f;
+        float speed = 100.0f;
+        if (obj->velocity[0] > 0.0f){
+            obj->velocity[0] = obj->velocity[0] - friction;
+        }
+        if (obj->velocity[0] < 0.0f){
+            obj->velocity[0] = obj->velocity[0] + friction;
+        }
+        if (obj->velocity[1] > 0.0f){
+            obj->velocity[1] = obj->velocity[1] - friction;
+        }
+        if (obj->velocity[1] < 0.0f){
+            obj->velocity[1] = obj->velocity[1] + friction;
+        }
+
+        if (obj->velocity[0] > -0.1f && obj->velocity[0] < 1.0f){ obj->velocity[0] = 0.0f;}
+        if (obj->velocity[1] > -0.1f && obj->velocity[1] < 1.0f){ obj->velocity[1] = 0.0f;}
+    
+
+
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_ESCAPE)) {
         glfwSetWindowShouldClose(minigl_engine->window, GLFW_TRUE);
     }
 
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W)) {
-        obj->velocity[0] = 0.0f;
-        obj->velocity[1] = 1.0f;
+        obj->velocity[1] = speed;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
-        obj->velocity[0] = -1.0f;
-        obj->velocity[1] = 0.0f;
+        obj->velocity[0] = -speed;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
-        obj->velocity[0] = 0.0f;
-        obj->velocity[1] = 0.0f;
+        obj->velocity[1] = -speed;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
-        obj->velocity[0] = 1.0f;
-        obj->velocity[1] = 0.0f;
+        obj->velocity[0] = speed;
     }
     
 }
