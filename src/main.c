@@ -32,7 +32,7 @@ int main(){
 
 
 
-    double previousTime = glfwGetTime();
+    double prev_time = glfwGetTime();
     int frameCount = 0;
 
     //main loop
@@ -43,20 +43,26 @@ int main(){
         update_input(&(myapp->engine_input_manager));
         glfwPollEvents();
         process_input(myapp, test);
-        minigl_process_movement(myapp);
+
+        double current_time = glfwGetTime();
+        double delta_time = current_time - prev_time;
+
+
+        minigl_process_movement(myapp, delta_time);
         minigl_draw(myapp);
 
 
-        double currentTime = glfwGetTime();
+
+
+        //put FPS in title bar
         frameCount++;
-        if (currentTime - previousTime >= 1.0) {
-            // Calculate FPS
+        if (current_time - prev_time >= 1.0) {
             int fps = frameCount;
             char title[256];
             snprintf(title, sizeof(title), "miniGL - [FPS: %d]", fps);
             glfwSetWindowTitle(myapp->window, title);
             frameCount = 0;
-            previousTime = currentTime;
+            prev_time = current_time;
         }
 
 
@@ -77,18 +83,20 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj){
     }
 
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W)) {
-        minigl_obj_set_position(obj, 200.0f, 200.0f);
+        obj->velocity[0] = 0.0f;
+        obj->velocity[1] = 1.0f;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
-        minigl_obj_set_position(obj, 100.0f, 100.0f);
+        obj->velocity[0] = -1.0f;
+        obj->velocity[1] = 0.0f;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
         obj->velocity[0] = 0.0f;
         obj->velocity[1] = 0.0f;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
-        obj->velocity[0] = 0.1f;
-        obj->velocity[1] = 0.1f;
+        obj->velocity[0] = 1.0f;
+        obj->velocity[1] = 0.0f;
     }
     
 }
@@ -153,7 +161,7 @@ int main(){
     initialize_input(myapp->window);
     glfwSetWindowUserPointer(myapp->window, myapp);
 
-    double previousTime = glfwGetTime();
+    double prev_time = glfwGetTime();
     int frameCount = 0;
 
     //main loop
@@ -170,16 +178,16 @@ int main(){
         renderer_draw(main_renderer);
 
 
-        double currentTime = glfwGetTime();
+        double current_time = glfwGetTime();
         frameCount++;
-        if (currentTime - previousTime >= 1.0) {
+        if (current_time - prev_time >= 1.0) {
             // Calculate FPS
             int fps = frameCount;
             char title[256];
             snprintf(title, sizeof(title), "miniGL - [FPS: %d]", fps);
             glfwSetWindowTitle(myapp->window, title);
             frameCount = 0;
-            previousTime = currentTime;
+            prev_time = current_time;
         }
 
 

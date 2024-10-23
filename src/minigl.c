@@ -154,7 +154,7 @@ minigl_engine *minigl_init(float x, float y, const char * name){
 }
 
 
-minigl_process_movement(minigl_engine *engine){
+minigl_process_movement(minigl_engine *engine, double delta_time){
     minigl_scene *current_scene = engine->scenes[engine->current_scene];
     if (current_scene == NULL){
         printf("MPM NO CURRENT SCENE\n");
@@ -166,8 +166,8 @@ minigl_process_movement(minigl_engine *engine){
         if (current_object == NULL){
             printf("MPM NO OBJECT FOUND\n");
         }
-        float new_x = current_object->position[0] + current_object->velocity[0];
-        float new_y = current_object->position[1] + current_object->velocity[1];
+        float new_x = current_object->position[0] + current_object->velocity[0] * delta_time;
+        float new_y = current_object->position[1] + current_object->velocity[1] * delta_time;
         minigl_obj_set_position(current_object, new_x, new_y);
     }
 }
