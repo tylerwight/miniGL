@@ -22,10 +22,6 @@ void update_input(input_manager *input_manager) {
     input_manager->scroll_y = 0;
 }
 
-dispatch_event(event* event){
-
-}
-
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     minigl_engine *ctx_engine = glfwGetWindowUserPointer(window);
@@ -40,8 +36,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 
 }
-
-
 
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
@@ -80,8 +74,6 @@ int is_key_down(input_manager *input_manager, int key) {
 }
 
 int is_key_pressed(input_manager *input_manager, int key) {
-    // printf("key: %d\n", input_manager->keys[key]);
-    // printf("key_last: %d\n", input_manager->keys_last[key]);
     return input_manager->keys[key] == GLFW_PRESS && input_manager->keys_last[key] != GLFW_RELEASE;
 }
 

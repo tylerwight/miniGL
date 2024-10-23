@@ -1,38 +1,18 @@
 #include "minigl.h"
 
-//todo
-// implement audio
-// great minigl object can contain audio
 
-void process_input(minigl_engine *minigl_engine, minigl_obj *obj);
+void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_time);
+void load_assets(minigl_engine *engine);
+minigl_scene *create_scene1(minigl_engine *engine);
 
 int main(){
     minigl_engine *myapp = minigl_init(1024.0f, 768.0f, "miniGL");
+    load_assets(myapp);
 
-    //create some colors
-    color red, green, blue;
-    color_set(&red, 1.0f, 0.0f, 0.0f, 1.0f);
-    color_set(&green, 0.0f, 1.0f, 0.0f, 1.0f);
-    color_set(&blue, 0.0f, 0.0f, 1.0f, 1.0f);
-
-    minigl_shader_load(myapp, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", "mainshader");
-    minigl_texture_load(myapp, "assets/snek_head.png", "head");
-    minigl_texture_load(myapp, "assets/snek_body1.png", "body1");
-
-    minigl_obj *square_blue = minigl_obj_create_quad(myapp, 500.0f, 350.0f, 50.0f, blue, NULL, "mainshader", MINIGL_DYNAMIC);
-    minigl_obj *body1 = minigl_obj_create_quad(myapp, 150.0f, 300.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
-    minigl_obj *body2 = minigl_obj_create_quad(myapp, 750.0f, 300.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
-
-    minigl_scene *scene = minigl_scene_create();
-
-    minigl_scene_attach_object(scene, square_blue);
-    minigl_scene_attach_object(scene, body1);
-    minigl_scene_attach_object(scene, body2);
+    minigl_scene *scene = create_scene1(myapp); 
     minigl_engine_attach_scene(myapp, scene);
 
-    audio_manager_load_sound(myapp->audio_manager, "assets/example.wav", "test");
-    audio_source *test = audio_manager_create_source(myapp->audio_manager, "test");
-
+    audio_source *test = audio_manager_create_source(&myapp->audio_manager, "test");
     audio_manager_play_source(test);
 
     double current_time = glfwGetTime();
@@ -49,13 +29,13 @@ int main(){
 
         update_input(&(myapp->engine_input_manager));
         glfwPollEvents();
-        process_input(myapp, square_blue);
+        
 
         double current_time = glfwGetTime();
         double delta_time = current_time - prev_time;
         prev_time = current_time;
 
-
+        process_input(myapp, scene->objects[0], delta_time);
         minigl_process_movement(myapp, delta_time);
         minigl_draw(myapp);
 
@@ -84,20 +64,20 @@ int main(){
 
 
 
-void process_input(minigl_engine *minigl_engine, minigl_obj *obj){
-        float friction = 0.1f;
+void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_time){
+        float friction = 50.1f;
         float speed = 100.0f;
         if (obj->velocity[0] > 0.0f){
-            obj->velocity[0] = obj->velocity[0] - friction;
+            obj->velocity[0] = obj->velocity[0] - (friction * delta_time);
         }
         if (obj->velocity[0] < 0.0f){
-            obj->velocity[0] = obj->velocity[0] + friction;
+            obj->velocity[0] = obj->velocity[0] + (friction * delta_time);
         }
         if (obj->velocity[1] > 0.0f){
-            obj->velocity[1] = obj->velocity[1] - friction;
+            obj->velocity[1] = obj->velocity[1] - (friction * delta_time);
         }
         if (obj->velocity[1] < 0.0f){
-            obj->velocity[1] = obj->velocity[1] + friction;
+            obj->velocity[1] = obj->velocity[1] + (friction * delta_time);
         }
 
         if (obj->velocity[0] > -0.1f && obj->velocity[0] < 1.0f){ obj->velocity[0] = 0.0f;}
@@ -122,4 +102,33 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj){
         obj->velocity[0] = speed;
     }
     
+}
+
+
+minigl_scene *create_scene1(minigl_engine *engine){
+    //create some colors
+    color red, green, blue;
+    color_set(&red, 1.0f, 0.0f, 0.0f, 1.0f);
+    color_set(&green, 0.0f, 1.0f, 0.0f, 1.0f);
+    color_set(&blue, 0.0f, 0.0f, 1.0f, 1.0f);
+
+
+    minigl_obj *objects[3];
+    objects[0] = minigl_obj_create_quad(engine, 500.0f, 350.0f, 50.0f, blue, NULL, "mainshader", MINIGL_DYNAMIC);
+    objects[1] = minigl_obj_create_quad(engine, 150.0f, 300.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
+    objects[2] = minigl_obj_create_quad(engine, 750.0f, 300.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
+
+    minigl_scene *scene = minigl_scene_create();
+
+    minigl_scene_attach_object_many(scene, objects, 3);
+
+    return scene;
+}
+
+void load_assets(minigl_engine *engine){
+    minigl_shader_load(engine, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", "mainshader");
+    minigl_texture_load(engine, "assets/snek_head.png", "head");
+    minigl_texture_load(engine, "assets/snek_body1.png", "body1");
+    audio_manager_load_sound(&engine->audio_manager, "assets/example.wav", "test");
+
 }

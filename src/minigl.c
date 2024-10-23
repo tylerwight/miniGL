@@ -19,7 +19,7 @@ minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_p
     renderable_object_create_fromquad(output_obj->renderable, obj_quad, obj_shader);
 
     if (type == MINIGL_STATIC){
-        output_obj->renderable->type == RO_STATIC;
+        output_obj->renderable->type = RO_STATIC;
     } else {
         output_obj->renderable->type = RO_DYNAMIC;
     }
@@ -30,7 +30,7 @@ minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_p
 
 }
 
-minigl_obj_set_position(minigl_obj *obj, float x_pos, float y_pos){
+void minigl_obj_set_position(minigl_obj *obj, float x_pos, float y_pos){
     float x_delta = x_pos - obj->position[0];
     float y_delta = y_pos - obj->position[1];
     renderable_object_translate(obj->renderable, x_delta, y_delta);
@@ -113,6 +113,18 @@ void minigl_scene_attach_object(minigl_scene *scene, minigl_obj *object) {
     scene->object_count++;
 }
 
+
+void minigl_scene_attach_object_many(minigl_scene *scene, minigl_obj *object[], int obj_count) {
+    scene->objects = realloc(scene->objects, sizeof(minigl_obj*) * (scene->object_count + obj_count));
+
+
+    for (int i = 0; i < obj_count; i++){
+        scene->objects[scene->object_count] = object[i];
+        scene->object_count++;
+    }
+
+}
+
 void minigl_engine_attach_scene(minigl_engine *engine, minigl_scene *scene) {
     engine->scenes = realloc(engine->scenes, sizeof(minigl_scene*) * (engine->scene_count + 1));
 
@@ -150,13 +162,13 @@ minigl_engine *minigl_init(float x, float y, const char * name){
 
 
     output_engine->engine_renderer.cam = camera_create(1024.0f, 768.0f);
-    output_engine->engine_renderer.current_shader = NULL; 
-    output_engine->audio_manager = audio_manager_init(); 
+    output_engine->engine_renderer.current_shader = -1; 
+    output_engine->audio_manager = *audio_manager_init(); 
     return output_engine;
 }
 
 
-minigl_process_movement(minigl_engine *engine, double delta_time){
+void minigl_process_movement(minigl_engine *engine, double delta_time){
     minigl_scene *current_scene = engine->scenes[engine->current_scene];
     if (current_scene == NULL){
         printf("MPM NO CURRENT SCENE\n");

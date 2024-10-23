@@ -337,7 +337,7 @@ void renderable_object_translate(renderable_object *input, float x, float y){
 
 void renderable_object_draw(renderable_object *input){
     glUseProgram(input->shader->program);
-    shader_set_uniform_mat4f(&input->shader->program, "uniform_model_matrix", input->model_matrix);
+    shader_set_uniform_mat4f(input->shader, "uniform_model_matrix", input->model_matrix);
 
     vertex_array_bind((input->vao));
     if (input->texture != NULL){
@@ -543,7 +543,7 @@ void renderable_batch_translate(renderable_batch *input, float x, float y){
 void renderable_batch_draw(renderable_batch *input){
     glUseProgram(input->objects[0]->shader->program);
     
-    shader_set_uniform_mat4f(&input->objects[0]->shader->program, "uniform_model_matrix", input->model_matrix); 
+    shader_set_uniform_mat4f(input->objects[0]->shader, "uniform_model_matrix", input->model_matrix); 
 
     vertex_array_bind((input->vao));
     buffer_bind(input->vbo);
