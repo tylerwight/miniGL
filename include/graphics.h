@@ -71,6 +71,11 @@ typedef struct texture {
     char name[32];
 } texture;
 
+typedef enum ro_type{
+    RO_STATIC,
+    RO_DYNAMIC
+} ro_type;
+
 typedef struct renderable_object {
     vertex_array *vao;
     buffer *vbo;
@@ -78,6 +83,7 @@ typedef struct renderable_object {
     shader *shader;
     texture *texture;
     mat4 model_matrix;
+    ro_type type;
 } renderable_object;
 
 
@@ -190,18 +196,20 @@ void renderable_object_translate(renderable_object *input, float x, float y);
 
 
 //renderable batch
+renderable_batch *renderable_batch_create();
 void renderable_batch_update_data(renderable_batch *input);
 void renderable_batch_attach_object(renderable_batch *input, renderable_object *object);
 void renderable_batch_initialize(renderable_batch *input);
 void renderable_batch_translate(renderable_batch *input, float x, float y);
 void renderable_batch_draw(renderable_batch *input);
+void renderable_batch_flush(renderable_batch *input);
 
 
 //renderer
 void renderer_attach_object(renderer *dst, renderable_object *object);
 void renderer_attach_batch(renderer *dst, renderable_batch *batch);
 
-void renderer_draw(renderer *input);
+void renderer_draw(renderer *renderer, renderable_object **objects, int object_count);
 
 
 //camera

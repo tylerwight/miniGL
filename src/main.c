@@ -3,8 +3,6 @@
 //todo
 // implement audio
 // great minigl object can contain audio
-//renderer_draw_objects (renderable_objects[], count) -- it does batching/instancing on it's own
-//local xy coords compared to model matrix 
 
 void process_input(minigl_engine *minigl_engine, minigl_obj *obj);
 
@@ -21,13 +19,15 @@ int main(){
     minigl_texture_load(myapp, "assets/snek_head.png", "head");
     minigl_texture_load(myapp, "assets/snek_body1.png", "body1");
 
-    minigl_obj *test = minigl_obj_create_quad(myapp, 100.0f, 100.0f, 50.0f, blue, "head", "mainshader");
-    minigl_obj *test2 = minigl_obj_create_quad(myapp, 150.0f, 100.0f, 50.0f, blue, "body1", "mainshader");
+    minigl_obj *test = minigl_obj_create_quad(myapp, 100.0f, 100.0f, 50.0f, blue, NULL, "mainshader", MINIGL_DYNAMIC);
+    minigl_obj *test2 = minigl_obj_create_quad(myapp, 150.0f, 100.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
+    minigl_obj *test3 = minigl_obj_create_quad(myapp, 250.0f, 300.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
 
     minigl_scene *scene = minigl_scene_create();
 
     minigl_scene_attach_object(scene, test);
     minigl_scene_attach_object(scene, test2);
+    minigl_scene_attach_object(scene, test3);
     minigl_engine_attach_scene(myapp, scene);
 
 
@@ -43,6 +43,7 @@ int main(){
         update_input(&(myapp->engine_input_manager));
         glfwPollEvents();
         process_input(myapp, test);
+        minigl_process_movement(myapp);
         minigl_draw(myapp);
 
 
@@ -71,24 +72,24 @@ int main(){
 
 
 void process_input(minigl_engine *minigl_engine, minigl_obj *obj){
-    static float dt = 0.0f;
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_ESCAPE)) {
         glfwSetWindowShouldClose(minigl_engine->window, GLFW_TRUE);
     }
 
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W)) {
-        minigl_obj_set_position(obj, 200.0f+dt, 200.0f+dt);
-    }
-    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
         minigl_obj_set_position(obj, 200.0f, 200.0f);
     }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
+        minigl_obj_set_position(obj, 100.0f, 100.0f);
+    }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
-        minigl_obj_set_position(obj, 512.0f, 384.0f);
+        obj->velocity[0] = 0.0f;
+        obj->velocity[1] = 0.0f;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
+        obj->velocity[0] = 0.1f;
+        obj->velocity[1] = 0.1f;
     }
-
-    dt += 0.1f;
     
 }
 

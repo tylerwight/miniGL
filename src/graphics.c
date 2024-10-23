@@ -443,11 +443,11 @@ void renderable_batch_update_textures(renderable_batch *input) {
             }
 
             // Bind texture and update buffer
-            printf("Binding texture %d to slot %d\n", object->texture->id, slot);
+            //printf("Binding texture %d to slot %d\n", object->texture->id, slot);
             glBindTextureUnit(slot, object->texture->id);
             buffer_update_text_slot(object->vbo, slot);
         } else {
-            printf("Setting object %d texture slot to 0\n", i);
+            //printf("Setting object %d texture slot to 0\n", i);
             buffer_update_text_slot(object->vbo, 0);
         }
     }
@@ -492,6 +492,11 @@ void renderable_batch_update_data(renderable_batch *input) {
 
     free(vertex_data);
     free(index_data);
+}
+
+renderable_batch *renderable_batch_create(){
+    renderable_batch *output_batch = calloc(1, sizeof(renderable_batch));
+    return output_batch;
 }
 
 void renderable_batch_initialize(renderable_batch *input){
@@ -552,6 +557,13 @@ void renderable_batch_draw(renderable_batch *input){
     vertex_array_unbind((input->vao));
 }
 
+void renderable_batch_flush(renderable_batch *input){
+    renderable_batch_initialize(input);
+    renderable_batch_update_data(input);
+    renderable_batch_draw(input);
+}
+
+
 //////////////////////////////
 ///////////RENDERER///////////
 /////////////////////////////
@@ -594,34 +606,108 @@ void renderer_attach_batch(renderer *dst, renderable_batch *batch){
 }
 
 
-void renderer_draw(renderer *input){
 
-    if (input->current_shader == NULL && input->shader_unchanged == 0){
-        if (input->batch_count > 0){
-            input->current_shader = input->batches[0]->objects[0]->shader;
-            printf("no current shader, setting shader\n");
+
+
+void renderer_draw(renderer *renderer, renderable_object **objects, int object_count){
+    renderable_batch *current_batch = renderable_batch_create();
+
+    if (renderer->shader_count < 1){
+        //printf("No shaders loaded into renderer\n");
+        return;
+    }
+
+    renderer->current_shader = 0;
+
+
+    for (int i = 0; i < object_count; i++){
+        renderable_object *obj = objects[i];
+
+        if (current_batch == NULL){
+            current_batch = renderable_batch_create();
         }
-        if (input->object_count > 0 && input->batch_count == 0){
-            input->current_shader = input->objects[0]->shader;
-            printf("no current shader, setting shader\n");
+
+        if (obj->type == RO_DYNAMIC){
+            renderable_object_draw(obj);
+            continue;
         }
-        input->shader_unchanged = 1;
+
+
+
+        if (obj->shader == renderer->shaders[renderer->current_shader]){
+            //printf("using current shader\n");
+            if( obj->texture == NULL) {
+                //printf("no texture, batching\n");
+                renderable_batch_attach_object(current_batch, obj);
+            }
+            
+            if(obj->texture != NULL && current_batch->used_slots < MAX_TEXTURE_SLOTS){
+                //printf("available texture slot, batching\n");
+                renderable_batch_attach_object(current_batch, obj);
+                renderable_batch_update_textures(current_batch);
+            }
+
+            if (obj->texture != NULL && current_batch->used_slots == MAX_TEXTURE_SLOTS){
+                //printf("ran out of texture slots, flushign\n");
+                renderable_batch_flush(current_batch);
+                free(current_batch);
+                current_batch = renderable_batch_create();
+                renderable_batch_attach_object(current_batch, obj);
+                renderable_batch_update_textures(current_batch);
+            }
+        } else{
+            //printf("using different shader, flushing\n");
+            if (current_batch->object_count != 0){
+                renderable_batch_flush(current_batch);
+            }
+            
+            renderer->current_shader += 1;
+            if (renderer->current_shader == renderer->shader_count){
+                //printf("no more shaders, resetting in case there are out-of-order objs\n");
+                renderer->current_shader = 0;
+            }
+            i--;
+        }
+
     }
 
-    if (input->camera_unchanged == 0 || input->shader_unchanged == 0){
-        printf("setting camera\n");
-        shader_set_uniform_mat4f(input->current_shader, "uniform_projection", input->cam.projection_matrix);
-        shader_set_uniform_mat4f(input->current_shader, "uniform_view", input->cam.view_matrix);
-        input->camera_unchanged = 1;
+    if (current_batch != NULL){
+        if (current_batch->object_count > 0){
+            renderable_batch_flush(current_batch);
+        }
     }
 
-    for(int i = 0; i < input->batch_count; i++){
-        renderable_batch_draw(input->batches[i]);
-    }
-    for(int i = 0; i < input->object_count; i++){
-        renderable_object_draw(input->objects[i]);
-    }
 }
+
+
+// void renderer_draw(renderer *input){
+
+//     if (input->current_shader == NULL && input->shader_unchanged == 0){
+//         if (input->batch_count > 0){
+//             input->current_shader = input->batches[0]->objects[0]->shader;
+//             printf("no current shader, setting shader\n");
+//         }
+//         if (input->object_count > 0 && input->batch_count == 0){
+//             input->current_shader = input->objects[0]->shader;
+//             printf("no current shader, setting shader\n");
+//         }
+//         input->shader_unchanged = 1;
+//     }
+
+//     if (input->camera_unchanged == 0 || input->shader_unchanged == 0){
+//         printf("setting camera\n");
+//         shader_set_uniform_mat4f(input->current_shader, "uniform_projection", input->cam.projection_matrix);
+//         shader_set_uniform_mat4f(input->current_shader, "uniform_view", input->cam.view_matrix);
+//         input->camera_unchanged = 1;
+//     }
+
+//     for(int i = 0; i < input->batch_count; i++){
+//         renderable_batch_draw(input->batches[i]);
+//     }
+//     for(int i = 0; i < input->object_count; i++){
+//         renderable_object_draw(input->objects[i]);
+//     }
+// }
 
 
 

@@ -7,9 +7,8 @@
 
 
 typedef enum{
-    MINIGL_QUAD,
-    MINIGL_CIRLCE,
-    MINIGL_TRIANGLE,
+    MINIGL_STATIC,
+    MINIGL_DYNAMIC,
     MINIGL_AUDIO,
     MINIGL_INVIS,
     MINIGL_EMPTY
@@ -40,9 +39,8 @@ typedef struct {
 } minigl_engine;
 
 
-minigl_engine *minigl_init(float x, float y, const char * name);
 
-minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_pos, int size, color color, const char *texture_name, const char *shader_name);
+minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_pos, int size, color color, const char *texture_name, const char *shader_name, minigl_obj_type type);
 minigl_obj_set_position(minigl_obj *obj, float x_pos, float y_pos);
 
 void minigl_shader_load(minigl_engine *engine, const char* vertex_shader_path, const char* fragment_shader_path, const char* name);
@@ -56,6 +54,8 @@ void minigl_scene_attach_object(minigl_scene *scene, minigl_obj *object);
 void minigl_engine_attach_scene(minigl_engine *engine, minigl_scene *scene);
 void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene);
 
-
+minigl_engine *minigl_init(float x, float y, const char * name);
 void minigl_draw(minigl_engine *engine);
+minigl_process_movement(minigl_engine *engine);
+
 #endif
