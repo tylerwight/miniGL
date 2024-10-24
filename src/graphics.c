@@ -613,7 +613,7 @@ void renderer_draw(renderer *renderer, renderable_object **objects, int object_c
     renderable_batch *current_batch = renderable_batch_create();
 
     if (renderer->shader_count < 1){
-        //printf("No shaders loaded into renderer\n");
+        printf("No shaders loaded into renderer\n");
         return;
     }
 
@@ -647,9 +647,10 @@ void renderer_draw(renderer *renderer, renderable_object **objects, int object_c
                 renderable_batch_update_textures(current_batch);
             }
 
-            if (obj->texture != NULL && current_batch->used_slots == MAX_TEXTURE_SLOTS){
+            if (obj->texture != NULL && current_batch->used_slots >= MAX_TEXTURE_SLOTS){
                 //printf("ran out of texture slots, flushign\n");
                 renderable_batch_flush(current_batch);
+                free(current_batch->objects);
                 free(current_batch);
                 current_batch = renderable_batch_create();
                 renderable_batch_attach_object(current_batch, obj);
@@ -674,7 +675,10 @@ void renderer_draw(renderer *renderer, renderable_object **objects, int object_c
     if (current_batch != NULL){
         if (current_batch->object_count > 0){
             renderable_batch_flush(current_batch);
+             
         }
+        free(current_batch->objects);
+        free(current_batch);
     }
 
 }

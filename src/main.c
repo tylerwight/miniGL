@@ -33,7 +33,6 @@ int main(){
         update_input(&(myapp->engine_input_manager));
         glfwPollEvents();
         
-
         double current_time = glfwGetTime();
         double delta_time = current_time - prev_time;
         prev_time = current_time;
@@ -42,12 +41,8 @@ int main(){
         check_collision(myapp, scene->objects[0]);
 
         minigl_process_movement(myapp, delta_time);
-        
         minigl_draw(myapp);
         
-
-
-
         //put FPS in title bar
         frame_count++;
         if (current_time - fps_last_time >= 1.0) {
@@ -79,7 +74,8 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
 
     printf("speed: %f\nfriction : %f\ngravity: %f\n", speed, friction, gravity);
 
-    obj->velocity[y] = gravity;
+    obj->velocity[y] += gravity;
+
     if (obj->velocity[x] > 0.0f){
         obj->velocity[x] = obj->velocity[x] - friction;
     }
