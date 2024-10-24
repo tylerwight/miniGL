@@ -26,6 +26,8 @@ minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_p
 
     output_obj->position[0] = x_pos;
     output_obj->position[1] = y_pos;
+    output_obj->size[0] = size;
+    output_obj->size[1] = size;
     return output_obj;
 
 }

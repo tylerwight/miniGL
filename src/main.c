@@ -4,6 +4,9 @@
 void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_time);
 void load_assets(minigl_engine *engine);
 minigl_scene *create_scene1(minigl_engine *engine);
+void check_collision(minigl_engine *engine, minigl_obj *obj);
+
+
 
 int main(){
     minigl_engine *myapp = minigl_init(1024.0f, 768.0f, "miniGL");
@@ -36,9 +39,12 @@ int main(){
         prev_time = current_time;
 
         process_input(myapp, scene->objects[0], delta_time);
-        minigl_process_movement(myapp, delta_time);
-        minigl_draw(myapp);
+        check_collision(myapp, scene->objects[0]);
 
+        minigl_process_movement(myapp, delta_time);
+        
+        minigl_draw(myapp);
+        
 
 
 
@@ -65,23 +71,30 @@ int main(){
 
 
 void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_time){
-        float friction = 50.1f;
-        float speed = 100.0f;
-        if (obj->velocity[0] > 0.0f){
-            obj->velocity[0] = obj->velocity[0] - (friction * delta_time);
-        }
-        if (obj->velocity[0] < 0.0f){
-            obj->velocity[0] = obj->velocity[0] + (friction * delta_time);
-        }
-        if (obj->velocity[1] > 0.0f){
-            obj->velocity[1] = obj->velocity[1] - (friction * delta_time);
-        }
-        if (obj->velocity[1] < 0.0f){
-            obj->velocity[1] = obj->velocity[1] + (friction * delta_time);
-        }
+    int x = 0;
+    int y = 1;
+    float friction = 500.0f * delta_time;
+    float speed = 100.0f;
+    float gravity = -100.0f;
 
-        if (obj->velocity[0] > -0.1f && obj->velocity[0] < 1.0f){ obj->velocity[0] = 0.0f;}
-        if (obj->velocity[1] > -0.1f && obj->velocity[1] < 1.0f){ obj->velocity[1] = 0.0f;}
+    printf("speed: %f\nfriction : %f\ngravity: %f\n", speed, friction, gravity);
+
+    obj->velocity[y] = gravity;
+    if (obj->velocity[x] > 0.0f){
+        obj->velocity[x] = obj->velocity[x] - friction;
+    }
+    if (obj->velocity[x] < 0.0f){
+        obj->velocity[x] = obj->velocity[x] + friction;
+    }
+    if (obj->velocity[y] > 0.0f){
+        obj->velocity[y] = obj->velocity[y] - friction;
+    }
+    if (obj->velocity[y] < 0.0f){
+        obj->velocity[y] = obj->velocity[y] + friction;
+    }
+
+    if (obj->velocity[x] > -0.1f && obj->velocity[x] < 1.0f){ obj->velocity[x] = 0.0f;}
+    if (obj->velocity[y] > -0.1f && obj->velocity[y] < 1.0f){ obj->velocity[y] = 0.0f;}
     
 
 
@@ -90,16 +103,16 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
     }
 
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W)) {
-        obj->velocity[1] = speed;
+        obj->velocity[y] = speed;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
-        obj->velocity[0] = -speed;
+        obj->velocity[x] = -speed;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
-        obj->velocity[1] = -speed;
+        obj->velocity[y] = -speed;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
-        obj->velocity[0] = speed;
+        obj->velocity[x] = speed;
     }
     
 }
@@ -115,7 +128,7 @@ minigl_scene *create_scene1(minigl_engine *engine){
 
     minigl_obj *objects[3];
     objects[0] = minigl_obj_create_quad(engine, 500.0f, 350.0f, 50.0f, blue, NULL, "mainshader", MINIGL_DYNAMIC);
-    objects[1] = minigl_obj_create_quad(engine, 150.0f, 300.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
+    objects[1] = minigl_obj_create_quad(engine, 500.0f, 200.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
     objects[2] = minigl_obj_create_quad(engine, 750.0f, 300.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
 
     minigl_scene *scene = minigl_scene_create();
@@ -131,4 +144,48 @@ void load_assets(minigl_engine *engine){
     minigl_texture_load(engine, "assets/snek_body1.png", "body1");
     audio_manager_load_sound(&engine->audio_manager, "assets/example.wav", "test");
 
+}
+
+
+void check_collision(minigl_engine *engine, minigl_obj *obj){
+    int x = 0;
+    int y = 1;
+    minigl_scene *current_scene = engine->scenes[engine->current_scene];
+    //printf("object X Y = (%f, %f)\n", obj->position[x], obj->position[y]);
+
+    for (int i = 0; i < current_scene->object_count; i++){
+        minigl_obj *current_obj = current_scene->objects[i];
+
+        if (current_obj == obj) {
+            continue;
+        }
+
+        int overlap_x = (obj->position[x] < current_obj->position[x] + current_obj->size[x] && 
+                          obj->position[x] + obj->size[x] > current_obj->position[x]);
+
+        int overlap_y = (obj->position[y] < current_obj->position[y] + current_obj->size[y] && 
+                          obj->position[y] + obj->size[y] > current_obj->position[y]);
+
+        if (overlap_x && overlap_y) {
+            
+            float overlap_right = (current_obj->position[x] + current_obj->size[x]) - obj->position[x]; 
+            float overlap_left = (obj->position[x] + obj->size[x]) - current_obj->position[x];          
+            float overlap_down = (current_obj->position[y] + current_obj->size[y]) - obj->position[y];  
+            float overlap_up = (obj->position[y] + obj->size[y]) - current_obj->position[y];            
+
+            if (overlap_left < overlap_right && overlap_left < overlap_down && overlap_left < overlap_up) {
+                minigl_obj_set_position(obj, current_obj->position[x] - obj->size[x], obj->position[y]);
+                obj->velocity[x] = 0;
+            } else if (overlap_right < overlap_left && overlap_right < overlap_down && overlap_right < overlap_up) {
+                minigl_obj_set_position(obj, current_obj->position[x] + current_obj->size[x], obj->position[y]);
+                obj->velocity[x] = 0;
+            } else if (overlap_up < overlap_down && overlap_up < overlap_left && overlap_up < overlap_right) {
+                minigl_obj_set_position(obj, obj->position[x], current_obj->position[y] - obj->size[y]);
+                obj->velocity[y] = 0;
+            } else {
+                minigl_obj_set_position(obj, obj->position[x], current_obj->position[y] + current_obj->size[y]);
+                obj->velocity[y] = 0;
+            }
+        }
+    }
 }

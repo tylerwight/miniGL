@@ -10,6 +10,7 @@
         "glew.h": "c",
         "vec3.h": "c",
         "time.h": "c",
-        "glfw3.h": "c"
+        "glfw3.h": "c",
+        "typeinfo": "c"
     }
 }

@@ -17,6 +17,7 @@ typedef enum{
 typedef struct{
     float position[2];
     float velocity[2];
+    int size[2];
     renderable_object *renderable;
     minigl_obj_type type;
 } minigl_obj;
