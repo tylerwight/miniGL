@@ -17,7 +17,7 @@ typedef enum{
 typedef struct{
     float position[2];
     float velocity[2];
-    int size[2];
+    int size[2]; //width/height
     renderable_object *renderable;
     minigl_obj_type type;
 } minigl_obj;
@@ -41,7 +41,7 @@ typedef struct {
 
 
 
-minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_pos, int size, color color, const char *texture_name, const char *shader_name, minigl_obj_type type);
+minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_pos, int width, int height, color color, const char *texture_name, const char *shader_name, minigl_obj_type type);
 void minigl_obj_set_position(minigl_obj *obj, float x_pos, float y_pos);
 
 void minigl_shader_load(minigl_engine *engine, const char* vertex_shader_path, const char* fragment_shader_path, const char* name);

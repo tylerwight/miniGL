@@ -227,7 +227,7 @@ void color_set(color* dest, float r, float g, float b, float a);
 //vertices setup
 void vertex_print(vertex *input);
 void quad_update_pos(quad *dest, float x, float y, int size);
-quad* quad_create(float x, float y, int size, color color, texture *texture);
+quad* quad_create(float x, float y, int width, int height, color color, texture *texture);
 void vertices_print(vertex *input, int count);
 
 void indices_print(void *data, int indices_count);

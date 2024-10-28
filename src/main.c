@@ -6,7 +6,34 @@ void load_assets(minigl_engine *engine);
 minigl_scene *create_scene1(minigl_engine *engine);
 void check_collision(minigl_engine *engine, minigl_obj *obj);
 
+int is_colliding(minigl_engine *engine, minigl_obj *obj) {
+    int x = 0;
+    int y = 1;
+    minigl_scene *current_scene = engine->scenes[engine->current_scene];
 
+    for (int i = 0; i < current_scene->object_count; i++) {
+        minigl_obj *current_obj = current_scene->objects[i];
+
+        if (current_obj == obj) {
+            continue; // Skip self-collision
+        }
+
+        // Check for overlap in x and y directions
+        int overlap_x = (obj->position[x] < current_obj->position[x] + current_obj->size[x] && 
+                         obj->position[x] + obj->size[x] > current_obj->position[x]);
+
+        int overlap_y = (obj->position[y] < current_obj->position[y] + current_obj->size[y] && 
+                         obj->position[y] + obj->size[y] > current_obj->position[y]);
+
+        if (overlap_x && overlap_y) {
+            return 1; // Collision found
+        }
+    }
+
+    return 0; // No collision
+}
+
+int jumping = 0;
 
 int main(){
     minigl_engine *myapp = minigl_init(1024.0f, 768.0f, "miniGL");
@@ -68,11 +95,13 @@ int main(){
 void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_time){
     int x = 0;
     int y = 1;
-    float friction = 500.0f * delta_time;
+    float friction = 10.0f;
     float speed = 100.0f;
-    float gravity = -100.0f;
+    float gravity = -15.0f;
+    
+    printf("speed: %f\nfriction : %f\ngravity: %f\n jumping: %d\n", speed, friction, gravity, jumping);
 
-    printf("speed: %f\nfriction : %f\ngravity: %f\n", speed, friction, gravity);
+
 
     obj->velocity[y] += gravity;
 
@@ -91,6 +120,10 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
 
     if (obj->velocity[x] > -0.1f && obj->velocity[x] < 1.0f){ obj->velocity[x] = 0.0f;}
     if (obj->velocity[y] > -0.1f && obj->velocity[y] < 1.0f){ obj->velocity[y] = 0.0f;}
+
+    if (is_colliding(minigl_engine, obj)){
+        jumping = 0;
+    }
     
 
 
@@ -99,7 +132,11 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
     }
 
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W)) {
-        obj->velocity[y] = speed;
+        if (jumping == 0){
+            obj->velocity[y] += speed*10;
+            jumping = 1;
+        }
+
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
         obj->velocity[x] = -speed;
@@ -110,36 +147,6 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
         obj->velocity[x] = speed;
     }
-    
-}
-
-
-minigl_scene *create_scene1(minigl_engine *engine){
-    //create some colors
-    color red, green, blue;
-    color_set(&red, 1.0f, 0.0f, 0.0f, 1.0f);
-    color_set(&green, 0.0f, 1.0f, 0.0f, 1.0f);
-    color_set(&blue, 0.0f, 0.0f, 1.0f, 1.0f);
-
-
-    minigl_obj *objects[3];
-    objects[0] = minigl_obj_create_quad(engine, 500.0f, 350.0f, 50.0f, blue, NULL, "mainshader", MINIGL_DYNAMIC);
-    objects[1] = minigl_obj_create_quad(engine, 500.0f, 200.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
-    objects[2] = minigl_obj_create_quad(engine, 750.0f, 300.0f, 50.0f, blue, "body1", "mainshader", MINIGL_STATIC);
-
-    minigl_scene *scene = minigl_scene_create();
-
-    minigl_scene_attach_object_many(scene, objects, 3);
-
-    return scene;
-}
-
-void load_assets(minigl_engine *engine){
-    minigl_shader_load(engine, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", "mainshader");
-    minigl_texture_load(engine, "assets/snek_head.png", "head");
-    minigl_texture_load(engine, "assets/snek_body1.png", "body1");
-    audio_manager_load_sound(&engine->audio_manager, "assets/example.wav", "test");
-
 }
 
 
@@ -180,8 +187,37 @@ void check_collision(minigl_engine *engine, minigl_obj *obj){
                 obj->velocity[y] = 0;
             } else {
                 minigl_obj_set_position(obj, obj->position[x], current_obj->position[y] + current_obj->size[y]);
+                jumping = 0;
                 obj->velocity[y] = 0;
             }
         }
     }
+}
+
+minigl_scene *create_scene1(minigl_engine *engine){
+    //create some colors
+    color red, green, blue;
+    color_set(&red, 1.0f, 0.0f, 0.0f, 1.0f);
+    color_set(&green, 0.0f, 1.0f, 0.0f, 1.0f);
+    color_set(&blue, 0.0f, 0.0f, 1.0f, 1.0f);
+
+
+    minigl_obj *objects[3];
+    objects[0] = minigl_obj_create_quad(engine, 500.0f, 350.0f, 50, 50, blue, NULL, "mainshader", MINIGL_DYNAMIC);
+    objects[1] = minigl_obj_create_quad(engine, 100.0f, 50.0f, 200, 100, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[2] = minigl_obj_create_quad(engine, 350.0f, 50.0f, 350, 100, red, NULL, "mainshader", MINIGL_STATIC);
+
+    minigl_scene *scene = minigl_scene_create();
+
+    minigl_scene_attach_object_many(scene, objects, 3);
+
+    return scene;
+}
+
+void load_assets(minigl_engine *engine){
+    minigl_shader_load(engine, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", "mainshader");
+    minigl_texture_load(engine, "assets/snek_head.png", "head");
+    minigl_texture_load(engine, "assets/snek_body1.png", "body1");
+    audio_manager_load_sound(&engine->audio_manager, "assets/example.wav", "test");
+
 }

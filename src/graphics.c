@@ -848,7 +848,7 @@ void quad_update_pos(quad *dest, float x, float y, int size){
 }
 
 
-quad* quad_create(float x, float y, int size, color color, texture *texture){
+quad* quad_create(float x, float y, int width, int height, color color, texture *texture){
     quad *output_quad = malloc(sizeof(quad));
 
     struct vertex v0;
@@ -863,7 +863,7 @@ quad* quad_create(float x, float y, int size, color color, texture *texture){
     v0.color[3] = color.a;
     
     struct vertex v1;
-    v1.position[0] = x + size;
+    v1.position[0] = x + width;
     v1.position[1] = y;
     v1.text_coords[0] = 1.0f;
     v1.text_coords[1] = 0.0f;
@@ -874,8 +874,8 @@ quad* quad_create(float x, float y, int size, color color, texture *texture){
     v1.color[3] = color.a;
 
     struct vertex v2;
-    v2.position[0] = x + size;
-    v2.position[1] = y + size;
+    v2.position[0] = x + width;
+    v2.position[1] = y + height;
     v2.text_coords[0] = 1.0f;
     v2.text_coords[1] = 1.0f;
     v2.text_slot = -1.0f;
@@ -886,7 +886,7 @@ quad* quad_create(float x, float y, int size, color color, texture *texture){
 
     struct vertex v3;
     v3.position[0] = x;
-    v3.position[1] = y + size;
+    v3.position[1] = y + height;
     v3.text_coords[0] = 0.0f;
     v3.text_coords[1] = 1.0f;
     v3.text_slot = -1.0f;

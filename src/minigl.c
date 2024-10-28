@@ -7,14 +7,14 @@
 ////////objects//////
 ////////////////////
 
-minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_pos, int size, color color, const char *texture_name, const char *shader_name, minigl_obj_type type){
+minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_pos, int width, int height, color color, const char *texture_name, const char *shader_name, minigl_obj_type type){
     minigl_obj *output_obj = calloc(1, sizeof(minigl_obj));
     output_obj->renderable = calloc(1, sizeof(renderable_object));
 
     texture *obj_texture = minigl_texture_get_by_name(engine, texture_name);
     shader *obj_shader = minigl_shader_get_by_name(engine, shader_name);
 
-    quad *obj_quad = quad_create(x_pos, y_pos, size, color, obj_texture);
+    quad *obj_quad = quad_create(x_pos, y_pos, width, height,  color, obj_texture);
     
     renderable_object_create_fromquad(output_obj->renderable, obj_quad, obj_shader);
 
@@ -26,8 +26,8 @@ minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_p
 
     output_obj->position[0] = x_pos;
     output_obj->position[1] = y_pos;
-    output_obj->size[0] = size;
-    output_obj->size[1] = size;
+    output_obj->size[0] = width;
+    output_obj->size[1] = height;
     return output_obj;
 
 }
@@ -135,6 +135,7 @@ void minigl_engine_attach_scene(minigl_engine *engine, minigl_scene *scene) {
 }
 void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene) {
     renderable_object **objects = calloc(scene->object_count, sizeof(renderable_object*));
+    
     for (int i = 0; i < scene->object_count; i++){
         objects[i] = scene->objects[i]->renderable;
     }
