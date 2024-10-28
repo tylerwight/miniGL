@@ -34,11 +34,24 @@ int is_colliding(minigl_engine *engine, minigl_obj *obj) {
 }
 
 int jumping = 0;
+float friction = 11.0f;
+float speed = 100.0f;
+float gravity = -15.0f;
+float jump_speed = 1000.0f;
 
 int main(){
     minigl_engine *myapp = minigl_init(1024.0f, 768.0f, "miniGL");
     load_assets(myapp);
-
+    struct nuklear_container nuklear_cont;
+    struct nuklear_debug_menu debug_data;
+    nuklear_container_setup(myapp->window, &nuklear_cont);
+    nuklear_debug_menu_setup(&debug_data, "Debug", 50.0f, 50.0f, 50.0f, 50.0f);
+    glfwSetWindowUserPointer(myapp->window, myapp);
+    debug_data.friction = &friction;
+    debug_data.speed = &speed;
+    debug_data.gravity = &gravity;
+    debug_data.jump_speed = &jump_speed;
+    
     minigl_scene *scene = create_scene1(myapp); 
     minigl_engine_attach_scene(myapp, scene);
 
@@ -69,6 +82,7 @@ int main(){
 
         minigl_process_movement(myapp, delta_time);
         minigl_draw(myapp);
+        nuklear_debug_menu_draw(myapp->window, &nuklear_cont, &debug_data);
         
         //put FPS in title bar
         frame_count++;
@@ -95,34 +109,48 @@ int main(){
 void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_time){
     int x = 0;
     int y = 1;
-    float friction = 10.0f;
-    float speed = 100.0f;
-    float gravity = -15.0f;
+
     
-    //printf("speed: %f\nfriction : %f\ngravity: %f\n jumping: %d\n", speed, friction, gravity, jumping);
+    printf("speed: %f\nfriction : %f\ngravity: %f\n jumping: %d\n VelX %f\n VelY %f\n", speed, friction, gravity, jumping, obj->velocity[0], obj->velocity[1]);
 
-
-
-    obj->velocity[y] += gravity;
+    
 
     if (obj->velocity[x] > 0.0f){
-        obj->velocity[x] = obj->velocity[x] - friction;
+        if (obj->velocity[x] < friction){
+            obj->velocity[x] = 0.0f;
+        }else{
+            obj->velocity[x] = obj->velocity[x] - friction;
+        }
     }
     if (obj->velocity[x] < 0.0f){
-        obj->velocity[x] = obj->velocity[x] + friction;
+        if (obj->velocity[x] > friction){
+            obj->velocity[x] = 0.0f;
+        }else{
+            obj->velocity[x] = obj->velocity[x] + friction;
+        }
     }
     if (obj->velocity[y] > 0.0f){
-        obj->velocity[y] = obj->velocity[y] - friction;
+        if (obj->velocity[y] < friction){
+            obj->velocity[y] = 0.0f;
+        }else{
+            obj->velocity[y] = obj->velocity[y] - friction;
+        }
     }
     if (obj->velocity[y] < 0.0f){
-        obj->velocity[y] = obj->velocity[y] + friction;
+        if (obj->velocity[y] > friction){
+            obj->velocity[y] = 0.0f;
+        }else{
+            obj->velocity[y] = obj->velocity[y] + friction;
+        }
     }
 
-    if (obj->velocity[x] > -0.1f && obj->velocity[x] < 1.0f){ obj->velocity[x] = 0.0f;}
-    if (obj->velocity[y] > -0.1f && obj->velocity[y] < 1.0f){ obj->velocity[y] = 0.0f;}
+    if (obj->velocity[x] > -1.0f && obj->velocity[x] < 1.0f){ obj->velocity[x] = 0.0f;}
+    if (obj->velocity[y] > -1.0f && obj->velocity[y] < 1.0f){ obj->velocity[y] = 0.0f;}
 
     if (is_colliding(minigl_engine, obj)){
         jumping = 0;
+    } else{
+        obj->velocity[y] += gravity;
     }
     
 
@@ -133,7 +161,7 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
 
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W)) {
         if (jumping == 0){
-            obj->velocity[y] += speed*10;
+            obj->velocity[y] += jump_speed;
             jumping = 1;
         }
 
@@ -142,11 +170,13 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
         obj->velocity[x] = -speed;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
-        obj->velocity[y] = -speed;
+        //obj->velocity[y] = -speed;
     }
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
         obj->velocity[x] = speed;
     }
+
+    
 }
 
 

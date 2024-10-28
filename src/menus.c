@@ -30,37 +30,41 @@ void nuklear_container_setup(GLFWwindow *window, struct nuklear_container *input
 
 void nuklear_debug_menu_setup(struct nuklear_debug_menu *input, const char *name, float x1, float y1, float x2, float y2){
     input->name = strdup(name);
-    input->object_pos1[0] = x1;
-    input->object_pos1[1] = y1;
-    input->object_pos2[0] = x2;
-    input->object_pos2[1] = y2;
 }
 
 void nuklear_debug_menu_draw(GLFWwindow *window, struct nuklear_container *container, struct nuklear_debug_menu *data){
         nk_glfw3_new_frame(&container->glfw);
 
         /* GUI */
-        if (nk_begin(container->ctx, data->name, nk_rect(50, 50, 230, 300),
-            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
-            NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
-        {
+        if (nk_begin(container->ctx, data->name, nk_rect(50, 50, 230, 300),NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE)){
+            char title_friction[100];
+            snprintf(title_friction, sizeof(title_friction), "Friciton: %g", *data->friction);
+
+            char title_speed[100];
+            snprintf(title_speed, sizeof(title_speed), "Speed: %g", *data->speed);
+
+            char title_gravity[100];
+            snprintf(title_gravity, sizeof(title_gravity), "Gravity: %g", *data->gravity);
+
+            char title_jump_speed[100];
+            snprintf(title_jump_speed, sizeof(title_jump_speed), "Jump_speed: %g", *data->jump_speed);
 
             nk_layout_row_dynamic(container->ctx, 20, 1);
-            nk_label(container->ctx, "A X axis", NK_TEXT_LEFT);
+            nk_label(container->ctx, title_friction, NK_TEXT_LEFT);
             nk_layout_row_dynamic(container->ctx, 25, 1);
-            nk_slider_float(container->ctx, 1.0f, &(data->object_pos1[0]), 1024.0f, 1.0f);
+            nk_slider_float(container->ctx, 0.0f, data->friction, 100.0f, 1.0f);
             nk_layout_row_dynamic(container->ctx, 20, 1);
-            nk_label(container->ctx, "A Y axis", NK_TEXT_LEFT);
+            nk_label(container->ctx, title_speed, NK_TEXT_LEFT);
             nk_layout_row_dynamic(container->ctx, 25, 1);
-            nk_slider_float(container->ctx, 1.0f, &(data->object_pos1[1]), 768.0f, 1.0f);
+            nk_slider_float(container->ctx, 1.0f, data->speed, 1000.0f, 1.0f);
             nk_layout_row_dynamic(container->ctx, 20, 1);
-            nk_label(container->ctx, "B X axis", NK_TEXT_LEFT);
+            nk_label(container->ctx, title_gravity, NK_TEXT_LEFT);
             nk_layout_row_dynamic(container->ctx, 25, 1);
-            nk_slider_float(container->ctx, 1.0f, &(data->object_pos2[0]), 1024.0f, 1.0f);
+            nk_slider_float(container->ctx, -300.0f, data->gravity, 300.0f, 1.0f);
             nk_layout_row_dynamic(container->ctx, 20, 1);
-            nk_label(container->ctx, "B Y axis", NK_TEXT_LEFT);
+            nk_label(container->ctx, title_jump_speed, NK_TEXT_LEFT);
             nk_layout_row_dynamic(container->ctx, 25, 1);
-            nk_slider_float(container->ctx, 1.0f, &(data->object_pos2[1]), 768.0f, 1.0f);
+            nk_slider_float(container->ctx, 1.0f, data->jump_speed, 2000.0f, 1.0f);
             nk_layout_row_dynamic(container->ctx, 25, 1);
 
         }

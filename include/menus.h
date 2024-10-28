@@ -24,8 +24,10 @@ struct nuklear_container{
 
 struct nuklear_debug_menu{
     const char *name;
-    float object_pos1[2];
-    float object_pos2[2];
+    float *friction;
+    float *speed;
+    float *gravity;
+    float *jump_speed;
 };
 
 void nuklear_container_setup(GLFWwindow *window, struct nuklear_container *input);
