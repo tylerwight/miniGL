@@ -99,7 +99,7 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
     float speed = 100.0f;
     float gravity = -15.0f;
     
-    printf("speed: %f\nfriction : %f\ngravity: %f\n jumping: %d\n", speed, friction, gravity, jumping);
+    //printf("speed: %f\nfriction : %f\ngravity: %f\n jumping: %d\n", speed, friction, gravity, jumping);
 
 
 
@@ -201,15 +201,16 @@ minigl_scene *create_scene1(minigl_engine *engine){
     color_set(&green, 0.0f, 1.0f, 0.0f, 1.0f);
     color_set(&blue, 0.0f, 0.0f, 1.0f, 1.0f);
 
-
-    minigl_obj *objects[3];
+    int object_count = 4;
+    minigl_obj *objects[4];
     objects[0] = minigl_obj_create_quad(engine, 500.0f, 350.0f, 50, 50, blue, NULL, "mainshader", MINIGL_DYNAMIC);
     objects[1] = minigl_obj_create_quad(engine, 100.0f, 50.0f, 200, 100, red, NULL, "mainshader", MINIGL_STATIC);
     objects[2] = minigl_obj_create_quad(engine, 350.0f, 50.0f, 350, 100, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[3] = minigl_obj_create_quad(engine, 725.0f, 50.0f, 100, 200, red, NULL, "mainshader", MINIGL_STATIC);
 
     minigl_scene *scene = minigl_scene_create();
 
-    minigl_scene_attach_object_many(scene, objects, 3);
+    minigl_scene_attach_object_many(scene, objects, object_count);
 
     return scene;
 }
