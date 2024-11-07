@@ -37,17 +37,17 @@ void nuklear_debug_menu_draw(GLFWwindow *window, struct nuklear_container *conta
 
         /* GUI */
         if (nk_begin(container->ctx, data->name, nk_rect(50, 50, 230, 300),NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE)){
-            char title_friction[100];
-            snprintf(title_friction, sizeof(title_friction), "Friciton: %g", *data->friction);
+            char title_friction[100] = {0};
+            //snprintf(title_friction, sizeof(title_friction), "Friciton: %g", *data->friction);
 
-            char title_speed[100];
-            snprintf(title_speed, sizeof(title_speed), "Speed: %g", *data->speed);
+            char title_speed[100]= {0};
+            //snprintf(title_speed, sizeof(title_speed), "Speed: %g", *data->speed);
 
-            char title_gravity[100];
-            snprintf(title_gravity, sizeof(title_gravity), "Gravity: %g", *data->gravity);
+            char title_gravity[100]= {0};
+            //snprintf(title_gravity, sizeof(title_gravity), "Gravity: %g", *data->gravity);
 
-            char title_jump_speed[100];
-            snprintf(title_jump_speed, sizeof(title_jump_speed), "Jump_speed: %g", *data->jump_speed);
+            char title_jump_speed[100]= {0};
+            //snprintf(title_jump_speed, sizeof(title_jump_speed), "Jump_speed: %g", *data->jump_speed);
 
             nk_layout_row_dynamic(container->ctx, 20, 1);
             nk_label(container->ctx, title_friction, NK_TEXT_LEFT);

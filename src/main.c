@@ -15,10 +15,9 @@ int is_colliding(minigl_engine *engine, minigl_obj *obj) {
         minigl_obj *current_obj = current_scene->objects[i];
 
         if (current_obj == obj) {
-            continue; // Skip self-collision
+            continue;
         }
 
-        // Check for overlap in x and y directions
         int overlap_x = (obj->position[x] < current_obj->position[x] + current_obj->size[x] && 
                          obj->position[x] + obj->size[x] > current_obj->position[x]);
 
@@ -26,31 +25,79 @@ int is_colliding(minigl_engine *engine, minigl_obj *obj) {
                          obj->position[y] + obj->size[y] > current_obj->position[y]);
 
         if (overlap_x && overlap_y) {
-            return 1; // Collision found
+            return 1; 
         }
     }
 
     return 0; // No collision
 }
 
+int is_colliding_top(minigl_engine *engine, minigl_obj *obj) {
+    int x = 0;
+    int y = 1;
+    minigl_scene *current_scene = engine->scenes[engine->current_scene];
+
+    for (int i = 0; i < current_scene->object_count; i++) {
+        minigl_obj *current_obj = current_scene->objects[i];
+
+        // Skip if the object is itself
+        if (current_obj == obj) {
+            continue;
+        }
+
+        // Check for horizontal overlap
+        int overlap_x = (obj->position[x] < current_obj->position[x] + current_obj->size[x] && 
+                         obj->position[x] + obj->size[x] > current_obj->position[x]);
+
+        // Check if obj's bottom aligns with current_obj's top
+        int top_collision = (obj->position[y] + obj->size[y] == current_obj->position[y]);
+
+        // Only return true if both conditions are met
+        if (overlap_x && top_collision) {
+            return 1; // Collision detected on the top of the object
+        }
+    }
+
+    return 0; // No top collision
+}
+
+int is_outside_screen(minigl_engine *engine, minigl_obj *obj) {
+    int x = 0;
+    int y = 1;
+
+    // Get the window dimensions from the engine
+    float screen_width = engine->window_x;
+    float screen_height = engine->window_y;
+
+    // Check if the object is out of bounds in any direction
+    if (obj->position[x] + obj->size[x] < 0 ||        // Left side
+        obj->position[x] > screen_width ||            // Right side
+        obj->position[y] + obj->size[y] < 0 ||        // Bottom side
+        obj->position[y] > screen_height) {           // Top side
+        return 1; // The object is outside the screen
+    }
+
+    return 0; // The object is within screen bounds
+}
+
 int jumping = 0;
 float friction = 11.0f;
-float speed = 100.0f;
-float gravity = -15.0f;
-float jump_speed = 1000.0f;
+float speed = 150.0f;
+float gravity = -18.0f;
+float jump_speed = 1150.0f;
 
 int main(){
     minigl_engine *myapp = minigl_init(1024.0f, 768.0f, "miniGL");
     load_assets(myapp);
-    struct nuklear_container nuklear_cont;
-    struct nuklear_debug_menu debug_data;
-    nuklear_container_setup(myapp->window, &nuklear_cont);
-    nuklear_debug_menu_setup(&debug_data, "Debug", 50.0f, 50.0f, 50.0f, 50.0f);
-    glfwSetWindowUserPointer(myapp->window, myapp);
-    debug_data.friction = &friction;
-    debug_data.speed = &speed;
-    debug_data.gravity = &gravity;
-    debug_data.jump_speed = &jump_speed;
+    // struct nuklear_container nuklear_cont;
+    // struct nuklear_debug_menu debug_data;
+    // nuklear_container_setup(myapp->window, &nuklear_cont);
+    // nuklear_debug_menu_setup(&debug_data, "Debug", 50.0f, 50.0f, 50.0f, 50.0f);
+    // glfwSetWindowUserPointer(myapp->window, myapp);
+    // debug_data.friction = &friction;
+    // debug_data.speed = &speed;
+    // debug_data.gravity = &gravity;
+    // debug_data.jump_speed = &jump_speed;
     
     minigl_scene *scene = create_scene1(myapp); 
     minigl_engine_attach_scene(myapp, scene);
@@ -82,7 +129,7 @@ int main(){
 
         minigl_process_movement(myapp, delta_time);
         minigl_draw(myapp);
-        nuklear_debug_menu_draw(myapp->window, &nuklear_cont, &debug_data);
+        //nuklear_debug_menu_draw(myapp->window, &nuklear_cont, &debug_data);
         
         //put FPS in title bar
         frame_count++;
@@ -109,7 +156,7 @@ int main(){
 void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_time){
     int x = 0;
     int y = 1;
-
+    static int wait = 0;
     
     printf("speed: %f\nfriction : %f\ngravity: %f\n jumping: %d\n VelX %f\n VelY %f\n", speed, friction, gravity, jumping, obj->velocity[0], obj->velocity[1]);
 
@@ -147,22 +194,37 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
     if (obj->velocity[x] > -1.0f && obj->velocity[x] < 1.0f){ obj->velocity[x] = 0.0f;}
     if (obj->velocity[y] > -1.0f && obj->velocity[y] < 1.0f){ obj->velocity[y] = 0.0f;}
 
-    if (is_colliding(minigl_engine, obj)){
+    if (is_colliding_top(minigl_engine, obj)){
         jumping = 0;
     } else{
+        
+    }
+
+    if (jumping != 0){
         obj->velocity[y] += gravity;
+    }
+
+    if (is_outside_screen(minigl_engine, obj)){
+        minigl_obj_set_position(obj, 100, 200);
     }
     
 
-
+    
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_ESCAPE)) {
         glfwSetWindowShouldClose(minigl_engine->window, GLFW_TRUE);
     }
 
     if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W)) {
         if (jumping == 0){
-            obj->velocity[y] += jump_speed;
             jumping = 1;
+            obj->velocity[y] = jump_speed;
+            wait = 100;
+            
+        }
+
+        if (jumping == 1 && wait == 0){
+            jumping = 2;
+            obj->velocity[y] = jump_speed;
         }
 
     }
@@ -176,7 +238,7 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
         obj->velocity[x] = speed;
     }
 
-    
+    if (wait > 0){wait--;};
 }
 
 
@@ -188,6 +250,7 @@ void check_collision(minigl_engine *engine, minigl_obj *obj){
 
     for (int i = 0; i < current_scene->object_count; i++){
         minigl_obj *current_obj = current_scene->objects[i];
+        
 
         if (current_obj == obj) {
             continue;
@@ -231,12 +294,16 @@ minigl_scene *create_scene1(minigl_engine *engine){
     color_set(&green, 0.0f, 1.0f, 0.0f, 1.0f);
     color_set(&blue, 0.0f, 0.0f, 1.0f, 1.0f);
 
-    int object_count = 4;
-    minigl_obj *objects[4];
-    objects[0] = minigl_obj_create_quad(engine, 500.0f, 350.0f, 50, 50, blue, NULL, "mainshader", MINIGL_DYNAMIC);
-    objects[1] = minigl_obj_create_quad(engine, 100.0f, 50.0f, 200, 100, red, NULL, "mainshader", MINIGL_STATIC);
-    objects[2] = minigl_obj_create_quad(engine, 350.0f, 50.0f, 350, 100, red, NULL, "mainshader", MINIGL_STATIC);
-    objects[3] = minigl_obj_create_quad(engine, 725.0f, 50.0f, 100, 200, red, NULL, "mainshader", MINIGL_STATIC);
+    int object_count = 8;
+    minigl_obj *objects[object_count];
+    objects[0] = minigl_obj_create_quad(engine, 10.0f, 350.0f, 25, 25, green, NULL , "mainshader", MINIGL_DYNAMIC);
+    objects[1] = minigl_obj_create_quad(engine, 0.0f, 50.0f, 200, 100, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[2] = minigl_obj_create_quad(engine, 700.0f, 50.0f, 300, 100, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[3] = minigl_obj_create_quad(engine, 250.0f, 200.0f, 50, 25, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[4] = minigl_obj_create_quad(engine, 400.0f, 350.0f, 50, 25, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[5] = minigl_obj_create_quad(engine, 0.0f, 50.0f, 25, 700, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[6] = minigl_obj_create_quad(engine, 1000.0f, 50.0f, 25, 700, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[7] = minigl_obj_create_quad(engine, 0.0f, 700.0f, 1024, 200, blue, NULL, "mainshader", MINIGL_STATIC);
 
     minigl_scene *scene = minigl_scene_create();
 
