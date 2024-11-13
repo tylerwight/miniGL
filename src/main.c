@@ -4,6 +4,7 @@
 void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_time);
 void load_assets(minigl_engine *engine);
 minigl_scene *create_scene1(minigl_engine *engine);
+minigl_scene *create_scene2(minigl_engine *engine);
 void check_collision(minigl_engine *engine, minigl_obj *obj);
 
 int is_colliding(minigl_engine *engine, minigl_obj *obj) {
@@ -61,6 +62,23 @@ int is_colliding_top(minigl_engine *engine, minigl_obj *obj) {
     return 0; // No top collision
 }
 
+int is_colliding_between(minigl_obj *obj1, minigl_obj *obj2) {
+    int x = 0;
+    int y = 1;
+
+    // Check for overlap in the x-axis
+    int overlap_x = (obj1->position[x] < obj2->position[x] + obj2->size[x] && 
+                     obj1->position[x] + obj1->size[x] > obj2->position[x]);
+
+    // Check for overlap in the y-axis
+    int overlap_y = (obj1->position[y] < obj2->position[y] + obj2->size[y] && 
+                     obj1->position[y] + obj1->size[y] > obj2->position[y]);
+
+    // Return 1 if both x and y axes overlap, indicating a collision
+    return overlap_x && overlap_y;
+}
+
+
 int is_outside_screen(minigl_engine *engine, minigl_obj *obj) {
     int x = 0;
     int y = 1;
@@ -99,8 +117,13 @@ int main(){
     // debug_data.gravity = &gravity;
     // debug_data.jump_speed = &jump_speed;
     
-    minigl_scene *scene = create_scene1(myapp); 
-    minigl_engine_attach_scene(myapp, scene);
+    minigl_scene *scene1 = create_scene1(myapp); 
+    minigl_engine_attach_scene(myapp, scene1);
+
+    minigl_scene *scene2 = create_scene2(myapp); 
+    minigl_engine_attach_scene(myapp, scene2);
+
+    myapp->current_scene = 0;
 
     audio_source *test = audio_manager_create_source(&myapp->audio_manager, "test");
     audio_manager_play_source(test);
@@ -124,8 +147,11 @@ int main(){
         double delta_time = current_time - prev_time;
         prev_time = current_time;
 
-        process_input(myapp, scene->objects[0], delta_time);
-        check_collision(myapp, scene->objects[0]);
+        if (is_colliding_between(scene1->objects[0], scene1->objects[8])){printf("collinging\n");myapp->current_scene = 1;}
+        process_input(myapp, scene1->objects[0], delta_time);
+        check_collision(myapp, scene1->objects[0]);
+
+        
 
         minigl_process_movement(myapp, delta_time);
         minigl_draw(myapp);
@@ -197,10 +223,6 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
     if (is_colliding_top(minigl_engine, obj)){
         jumping = 0;
     } else{
-        
-    }
-
-    if (jumping != 0){
         obj->velocity[y] += gravity;
     }
 
@@ -289,10 +311,37 @@ void check_collision(minigl_engine *engine, minigl_obj *obj){
 
 minigl_scene *create_scene1(minigl_engine *engine){
     //create some colors
-    color red, green, blue;
+    color red, green, blue, purple;
     color_set(&red, 1.0f, 0.0f, 0.0f, 1.0f);
     color_set(&green, 0.0f, 1.0f, 0.0f, 1.0f);
     color_set(&blue, 0.0f, 0.0f, 1.0f, 1.0f);
+    color_set(&purple, 0.5f, 0.0f, 0.5f, 1.0f);
+
+    int object_count = 9;
+    minigl_obj *objects[object_count];
+    objects[0] = minigl_obj_create_quad(engine, 10.0f, 350.0f, 25, 25, green, NULL , "mainshader", MINIGL_DYNAMIC);
+    objects[1] = minigl_obj_create_quad(engine, 0.0f, 50.0f, 200, 100, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[2] = minigl_obj_create_quad(engine, 700.0f, 50.0f, 300, 100, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[3] = minigl_obj_create_quad(engine, 250.0f, 200.0f, 50, 25, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[4] = minigl_obj_create_quad(engine, 400.0f, 350.0f, 50, 25, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[5] = minigl_obj_create_quad(engine, 0.0f, 50.0f, 25, 700, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[6] = minigl_obj_create_quad(engine, 1000.0f, 50.0f, 25, 700, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[7] = minigl_obj_create_quad(engine, 0.0f, 700.0f, 1024, 200, blue, NULL, "mainshader", MINIGL_STATIC);
+    objects[8] = minigl_obj_create_quad(engine, 850.0f, 150.0f, 25, 25, purple, NULL, "mainshader", MINIGL_STATIC);
+
+    minigl_scene *scene = minigl_scene_create();
+
+    minigl_scene_attach_object_many(scene, objects, object_count);
+
+    return scene;
+}
+
+minigl_scene *create_scene2(minigl_engine *engine){
+    //create some colors
+    color red, green, blue;
+    color_set(&red, 1.0f, 0.4f, 0.0f, 1.0f);
+    color_set(&green, 0.4f, 1.0f, 0.0f, 1.0f);
+    color_set(&blue, 0.4f, 0.0f, 1.0f, 1.0f);
 
     int object_count = 8;
     minigl_obj *objects[object_count];
