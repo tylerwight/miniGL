@@ -1,6 +1,17 @@
 #include "minigl.h"
 
 
+#define PHYSICS_TIMESTEP 0.01666666 // 1/60 of second
+
+//todo
+//fix under collision bug
+//fix memory leak
+//fix 
+//add kill block
+//add art
+//add sounds
+//refactor
+
 void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_time);
 void load_assets(minigl_engine *engine);
 minigl_scene *create_scene1(minigl_engine *engine);
@@ -99,10 +110,10 @@ int is_outside_screen(minigl_engine *engine, minigl_obj *obj) {
 }
 
 int jumping = 0;
-float friction = 11.0f;
-float speed = 150.0f;
-float gravity = -18.0f;
-float jump_speed = 1150.0f;
+float friction = 0.8f;
+float speed = 5.0f;
+float gravity = -2.0f;
+float jump_speed = 29.0f;
 
 int main(){
     minigl_engine *myapp = minigl_init(1024.0f, 768.0f, "miniGL");
@@ -128,12 +139,10 @@ int main(){
     audio_source *test = audio_manager_create_source(&myapp->audio_manager, "test");
     audio_manager_play_source(test);
 
-    double current_time = glfwGetTime();
-    double prev_time = current_time;
+    double prev_time = glfwGetTime();
+    double accumulated_time = 0.0;
     int frame_count = 0;
-    double deltaTime = 0.0;
-
-    double fps_last_time = 0;
+    double fps_last_time = prev_time;
 
     //main loop
     while (!glfwWindowShouldClose(myapp->window)){ // game loop
@@ -144,16 +153,24 @@ int main(){
         glfwPollEvents();
         
         double current_time = glfwGetTime();
-        double delta_time = current_time - prev_time;
+        double frame_time = current_time - prev_time;
         prev_time = current_time;
-
-        if (is_colliding_between(scene1->objects[0], scene1->objects[8])){printf("collinging\n");myapp->current_scene = 1;}
-        process_input(myapp, scene1->objects[0], delta_time);
-        check_collision(myapp, scene1->objects[0]);
+        accumulated_time += frame_time;
 
         
+        
+        //check_collision(myapp, myapp->scenes[myapp->current_scene]->objects[0]);
 
-        minigl_process_movement(myapp, delta_time);
+        while (accumulated_time >= PHYSICS_TIMESTEP) {
+            
+            process_input(myapp, myapp->scenes[myapp->current_scene]->objects[0], frame_time);
+            minigl_process_movement(myapp, PHYSICS_TIMESTEP); // Call with fixed timestep
+            if (is_colliding_between(scene1->objects[0], scene1->objects[8])){myapp->current_scene = 1;}
+
+            check_collision(myapp, myapp->scenes[myapp->current_scene]->objects[0]);
+            accumulated_time -= PHYSICS_TIMESTEP;
+        }
+
         minigl_draw(myapp);
         //nuklear_debug_menu_draw(myapp->window, &nuklear_cont, &debug_data);
         
@@ -240,7 +257,7 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
         if (jumping == 0){
             jumping = 1;
             obj->velocity[y] = jump_speed;
-            wait = 100;
+            wait = 25;
             
         }
 
@@ -343,16 +360,17 @@ minigl_scene *create_scene2(minigl_engine *engine){
     color_set(&green, 0.4f, 1.0f, 0.0f, 1.0f);
     color_set(&blue, 0.4f, 0.0f, 1.0f, 1.0f);
 
-    int object_count = 8;
+    int object_count = 9;
     minigl_obj *objects[object_count];
     objects[0] = minigl_obj_create_quad(engine, 10.0f, 350.0f, 25, 25, green, NULL , "mainshader", MINIGL_DYNAMIC);
     objects[1] = minigl_obj_create_quad(engine, 0.0f, 50.0f, 200, 100, red, NULL, "mainshader", MINIGL_STATIC);
     objects[2] = minigl_obj_create_quad(engine, 700.0f, 50.0f, 300, 100, red, NULL, "mainshader", MINIGL_STATIC);
     objects[3] = minigl_obj_create_quad(engine, 250.0f, 200.0f, 50, 25, red, NULL, "mainshader", MINIGL_STATIC);
-    objects[4] = minigl_obj_create_quad(engine, 400.0f, 350.0f, 50, 25, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[4] = minigl_obj_create_quad(engine, 340.0f, 350.0f, 50, 25, blue, NULL, "mainshader", MINIGL_STATIC);
     objects[5] = minigl_obj_create_quad(engine, 0.0f, 50.0f, 25, 700, red, NULL, "mainshader", MINIGL_STATIC);
     objects[6] = minigl_obj_create_quad(engine, 1000.0f, 50.0f, 25, 700, red, NULL, "mainshader", MINIGL_STATIC);
     objects[7] = minigl_obj_create_quad(engine, 0.0f, 700.0f, 1024, 200, blue, NULL, "mainshader", MINIGL_STATIC);
+    objects[8] = minigl_obj_create_quad(engine, 440.0f, 250.0f, 50, 25, red, NULL, "mainshader", MINIGL_STATIC);
 
     minigl_scene *scene = minigl_scene_create();
 

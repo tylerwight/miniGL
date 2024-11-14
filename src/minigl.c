@@ -183,8 +183,8 @@ void minigl_process_movement(minigl_engine *engine, double delta_time){
         if (current_object == NULL){
             printf("MPM NO OBJECT FOUND\n");
         }
-        float new_x = current_object->position[0] + current_object->velocity[0] * delta_time;
-        float new_y = current_object->position[1] + current_object->velocity[1] * delta_time;
+        float new_x = current_object->position[0] + current_object->velocity[0];
+        float new_y = current_object->position[1] + current_object->velocity[1];
         minigl_obj_set_position(current_object, new_x, new_y);
     }
 }
@@ -194,6 +194,8 @@ void minigl_process_movement(minigl_engine *engine, double delta_time){
 
 
 void minigl_draw(minigl_engine *engine){
-    minigl_scene_draw(engine, engine->scenes[engine->current_scene]);
+    int current_scene_index = engine->current_scene;
+    minigl_scene *current_scene = engine->scenes[current_scene_index];
+    minigl_scene_draw(engine, current_scene);
 }
 
