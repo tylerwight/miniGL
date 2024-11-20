@@ -16,6 +16,7 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
 void load_assets(minigl_engine *engine);
 minigl_scene *create_scene1(minigl_engine *engine);
 minigl_scene *create_scene2(minigl_engine *engine);
+minigl_scene *create_scene_menu(minigl_engine *engine);
 void check_collision(minigl_engine *engine, minigl_obj *obj);
 
 int is_colliding(minigl_engine *engine, minigl_obj *obj) {
@@ -127,7 +128,10 @@ int main(){
     // debug_data.speed = &speed;
     // debug_data.gravity = &gravity;
     // debug_data.jump_speed = &jump_speed;
-    
+
+    minigl_scene *scene_menu = create_scene_menu(myapp);
+    minigl_engine_attach_scene(myapp, scene_menu);
+
     minigl_scene *scene1 = create_scene1(myapp); 
     minigl_engine_attach_scene(myapp, scene1);
 
@@ -201,7 +205,8 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj, double delta_t
     int y = 1;
     static int wait = 0;
     
-    printf("speed: %f\nfriction : %f\ngravity: %f\n jumping: %d\n VelX %f\n VelY %f\n", speed, friction, gravity, jumping, obj->velocity[0], obj->velocity[1]);
+    //printf("speed: %f\nfriction : %f\ngravity: %f\n jumping: %d\n VelX %f\n VelY %f\n", speed, friction, gravity, jumping, obj->velocity[0], obj->velocity[1]);
+    //printf("X: %f, Y: %f\n", obj->position[x], obj->position[y]);
 
     
 
@@ -291,7 +296,7 @@ void check_collision(minigl_engine *engine, minigl_obj *obj){
         minigl_obj *current_obj = current_scene->objects[i];
         
 
-        if (current_obj == obj) {
+        if (current_obj == obj || current_obj->type == MINIGL_BACKGROUND) {
             continue;
         }
 
@@ -378,11 +383,32 @@ minigl_scene *create_scene2(minigl_engine *engine){
 
     return scene;
 }
+minigl_scene *create_scene_menu(minigl_engine *engine){
+    //create some colors
+    color red, green, blue;
+    color_set(&red, 1.0f, 0.4f, 0.0f, 1.0f);
+    color_set(&green, 0.4f, 1.0f, 0.0f, 1.0f);
+    color_set(&blue, 0.4f, 0.0f, 1.0f, 1.0f);
+
+    int object_count = 3;
+    minigl_obj *objects[object_count];
+    objects[0] = minigl_obj_create_quad(engine, 512.0f, 700.0f, 25, 25, green, NULL , "mainshader", MINIGL_DYNAMIC);
+    objects[1] = minigl_obj_create_quad(engine, 200.0f, 50.0f, 500, 100, blue, NULL, "mainshader", MINIGL_STATIC);
+    objects[2] = minigl_obj_create_quad(engine, 0.0f, 0.0f, 1024, 768, red, "title", "mainshader", MINIGL_BACKGROUND);
+
+
+    minigl_scene *scene = minigl_scene_create();
+
+    minigl_scene_attach_object_many(scene, objects, object_count);
+
+    return scene;
+}
 
 void load_assets(minigl_engine *engine){
     minigl_shader_load(engine, "shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", "mainshader");
     minigl_texture_load(engine, "assets/snek_head.png", "head");
     minigl_texture_load(engine, "assets/snek_body1.png", "body1");
+    minigl_texture_load(engine, "assets/title.png", "title");
     audio_manager_load_sound(&engine->audio_manager, "assets/example.wav", "test");
 
 }

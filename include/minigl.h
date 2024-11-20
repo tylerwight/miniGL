@@ -11,7 +11,8 @@ typedef enum{
     MINIGL_DYNAMIC,
     MINIGL_AUDIO,
     MINIGL_INVIS,
-    MINIGL_EMPTY
+    MINIGL_EMPTY,
+    MINIGL_BACKGROUND
 } minigl_obj_type;
 
 typedef struct{
@@ -43,6 +44,7 @@ typedef struct {
 
 minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_pos, int width, int height, color color, const char *texture_name, const char *shader_name, minigl_obj_type type);
 void minigl_obj_set_position(minigl_obj *obj, float x_pos, float y_pos);
+int minigl_obj_compare(const void *a, const void *b);
 
 void minigl_shader_load(minigl_engine *engine, const char* vertex_shader_path, const char* fragment_shader_path, const char* name);
 shader *minigl_shader_get_by_name(minigl_engine *engine, const char* name);

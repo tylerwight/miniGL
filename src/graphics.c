@@ -628,6 +628,10 @@ void renderer_draw(renderer *renderer, renderable_object **objects, int object_c
         }
 
         if (obj->type == RO_DYNAMIC){
+             if (current_batch != NULL) {
+                if (current_batch->object_count > 0){renderable_batch_flush(current_batch);}
+                
+            }
             renderable_object_draw(obj);
             continue;
         }
@@ -750,6 +754,7 @@ texture *texture_load(const char *path){
     GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
     int nrChannels;
+    stbi_set_flip_vertically_on_load(1);
     unsigned char *data = stbi_load(path, &(output_texture->width), &(output_texture->height), &nrChannels, 0);
     if (data){
         GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;

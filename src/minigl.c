@@ -24,10 +24,12 @@ minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_p
         output_obj->renderable->type = RO_DYNAMIC;
     }
 
+
     output_obj->position[0] = x_pos;
     output_obj->position[1] = y_pos;
     output_obj->size[0] = width;
     output_obj->size[1] = height;
+    output_obj->type = type;
     return output_obj;
 
 }
@@ -38,6 +40,26 @@ void minigl_obj_set_position(minigl_obj *obj, float x_pos, float y_pos){
     renderable_object_translate(obj->renderable, x_delta, y_delta);
     obj->position[0] = x_pos;
     obj->position[1] = y_pos;
+}
+
+int minigl_obj_compare(const void *a, const void *b) {
+    const minigl_obj *obj_a = *(const minigl_obj **)a;
+    const minigl_obj *obj_b = *(const minigl_obj **)b;
+
+    // Define the order
+    int type_priority[] = {
+        [MINIGL_BACKGROUND] = 0,
+        [MINIGL_STATIC] = 1,
+        [MINIGL_DYNAMIC] = 2,
+        [MINIGL_AUDIO] = 3, 
+        [MINIGL_INVIS] = 4, 
+        [MINIGL_EMPTY] = 5  
+    };
+
+    int priority_a = type_priority[obj_a->type];
+    int priority_b = type_priority[obj_b->type];
+
+    return (priority_a - priority_b);
 }
 
 
@@ -133,20 +155,54 @@ void minigl_engine_attach_scene(minigl_engine *engine, minigl_scene *scene) {
     engine->scenes[engine->scene_count] = scene;
     engine->scene_count++;
 }
-void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene) {
-    renderable_object **objects = calloc(scene->object_count, sizeof(renderable_object*));
+
+
+
+// void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene) {
+//     renderable_object **objects = calloc(scene->object_count, sizeof(renderable_object*));
     
-    for (int i = 0; i < scene->object_count; i++){
-        objects[i] = scene->objects[i]->renderable;
+//     for (int i = 0; i < scene->object_count; i++){
+//         objects[i] = scene->objects[i]->renderable;
+//     }
+//     renderer_draw(&engine->engine_renderer, objects, scene->object_count);
+//     free(objects);
+// }
+void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene) {
+    // Create an array of minigl_obj pointers for sorting
+    minigl_obj **obj_array = calloc(scene->object_count, sizeof(minigl_obj *));
+    for (int i = 0; i < scene->object_count; i++) {
+        obj_array[i] = scene->objects[i];
     }
+
+    // Sort the array of objects based on type priority
+    qsort(obj_array, scene->object_count, sizeof(minigl_obj *), minigl_obj_compare);
+
+    // Create an array of renderable_object pointers
+    printf("=====\n");
+    renderable_object **objects = calloc(scene->object_count, sizeof(renderable_object *));
+    for (int i = 0; i < scene->object_count; i++) {
+        objects[i] = obj_array[i]->renderable;
+        
+        if (obj_array[i]->type == MINIGL_BACKGROUND){
+            printf("background \n");
+        }
+        if (obj_array[i]->type == MINIGL_STATIC){
+            printf("static \n");
+        }
+        if (obj_array[i]->type == MINIGL_DYNAMIC){
+            printf("DYNAMIC \n");
+        }
+        
+    }
+    printf("=====\n");
+
+    // Draw using the renderer
     renderer_draw(&engine->engine_renderer, objects, scene->object_count);
-    // for (int i = 0; i < scene->object_count; i++) {
-    //     minigl_obj *obj = scene->objects[i];
-    //     renderable_object_draw(obj->renderable);
-    // }
+
+    // Clean up
+    free(obj_array);
     free(objects);
 }
-
 
 
 //engine
