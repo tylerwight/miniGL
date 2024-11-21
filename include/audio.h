@@ -12,6 +12,7 @@ typedef struct {
 typedef struct {
     ALuint source;
     int is_playing;
+    int loop;
 } audio_source;
 
 typedef struct {
@@ -29,10 +30,14 @@ void audio_manager_load_sound(audio_manager *manager, const char *file_path, con
 
 audio_source* audio_manager_create_source(audio_manager *manager, const char *sound_name);
 
-void audio_manager_play_source(audio_source *source);
+void audio_manager_play_source(audio_source *source, int loop);
 
 void audio_manager_stop_source(audio_source *source);
 
 void audio_manager_cleanup(audio_manager *manager);
+
+void audio_manager_play_by_name(audio_manager *manager, const char *sound_name);
+void audio_manager_update(audio_manager *manager);
+
 
 #endif

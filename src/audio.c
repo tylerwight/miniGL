@@ -71,7 +71,8 @@ audio_source* audio_manager_create_source(audio_manager *manager, const char *so
     return source;
 }
 
-void audio_manager_play_source(audio_source *source) {
+void audio_manager_play_source(audio_source *source, int loop) {
+    source->loop = loop;
     alSourcePlay(source->source);
     source->is_playing = 1;
 }
@@ -98,4 +99,49 @@ void audio_manager_cleanup(audio_manager *manager) {
     free(manager->sources);
     free(manager->buffers);
     free(manager);
+}
+
+
+void audio_manager_play_by_name(audio_manager *manager, const char *sound_name) {
+    ALuint buffer = audio_manager_get_buffer_by_name(manager, sound_name);
+    if (buffer == AL_NONE) {
+        fprintf(stderr, "Sound not found: %s\n", sound_name);
+        return;
+    }
+
+    ALuint source;
+    alGenSources(1, &source);
+    if (alGetError() != AL_NO_ERROR) {
+        fprintf(stderr, "Failed to generate source for sound: %s\n", sound_name);
+        return;
+    }
+    alSourcei(source, AL_BUFFER, buffer);
+
+    alSourcePlay(source);
+}
+
+
+
+void audio_manager_update(audio_manager *manager) {
+    for (int i = 0; i < manager->source_count; i++) {
+        ALint state;
+        alGetSourcei(manager->sources[i].source, AL_SOURCE_STATE, &state);
+        if (state != AL_PLAYING && manager->sources[i].is_playing) {
+            if (manager->sources[i].loop) {
+                alSourcePlay(manager->sources[i].source);
+                printf("looping!\n");
+            } else {
+                // Stop playback and clean up
+                manager->sources[i].is_playing = 0;
+                alDeleteSources(1, &manager->sources[i].source);
+
+                // Remove the source from the array and shift the rest down
+                for (int j = i; j < manager->source_count - 1; j++) {
+                    manager->sources[j] = manager->sources[j + 1];
+                }
+                manager->source_count--;
+                i--;
+            }
+        }
+    }
 }

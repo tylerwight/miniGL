@@ -5,6 +5,8 @@
 #include "audio.h"
 #include "menus.h"
 
+struct minigl_engine;
+struct minigl_scene;
 
 typedef enum{
     MINIGL_STATIC,
@@ -26,6 +28,7 @@ typedef struct{
 typedef struct{
     minigl_obj **objects;
     int object_count;
+    void (*scene_loop)(struct minigl_engine *engine);
 } minigl_scene;
 
 typedef struct {
@@ -38,6 +41,7 @@ typedef struct {
     int scene_count;
     int current_scene;
     audio_manager audio_manager; 
+    double accumulated_frame_time;
 } minigl_engine;
 
 
@@ -56,6 +60,7 @@ minigl_scene* minigl_scene_create();
 void minigl_scene_attach_object(minigl_scene *scene, minigl_obj *object);
 void minigl_scene_attach_object_many(minigl_scene *scene, minigl_obj *object[], int obj_count);
 void minigl_engine_attach_scene(minigl_engine *engine, minigl_scene *scene);
+void minigl_scene_run_loop(minigl_engine *engine);
 void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene);
 
 minigl_engine *minigl_init(float x, float y, const char * name);

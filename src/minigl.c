@@ -156,7 +156,10 @@ void minigl_engine_attach_scene(minigl_engine *engine, minigl_scene *scene) {
     engine->scene_count++;
 }
 
-
+void minigl_scene_run_loop(minigl_engine *engine){
+    minigl_scene *current_scene = engine->scenes[engine->current_scene];
+    current_scene->scene_loop(engine);
+}
 
 // void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene) {
 //     renderable_object **objects = calloc(scene->object_count, sizeof(renderable_object*));
@@ -178,23 +181,23 @@ void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene) {
     qsort(obj_array, scene->object_count, sizeof(minigl_obj *), minigl_obj_compare);
 
     // Create an array of renderable_object pointers
-    printf("=====\n");
+    //printf("=====\n");
     renderable_object **objects = calloc(scene->object_count, sizeof(renderable_object *));
     for (int i = 0; i < scene->object_count; i++) {
         objects[i] = obj_array[i]->renderable;
         
-        if (obj_array[i]->type == MINIGL_BACKGROUND){
-            printf("background \n");
-        }
-        if (obj_array[i]->type == MINIGL_STATIC){
-            printf("static \n");
-        }
-        if (obj_array[i]->type == MINIGL_DYNAMIC){
-            printf("DYNAMIC \n");
-        }
+        // if (obj_array[i]->type == MINIGL_BACKGROUND){
+        //     printf("background \n");
+        // }
+        // if (obj_array[i]->type == MINIGL_STATIC){
+        //     printf("static \n");
+        // }
+        // if (obj_array[i]->type == MINIGL_DYNAMIC){
+        //     printf("DYNAMIC \n");
+        // }
         
     }
-    printf("=====\n");
+    //printf("=====\n");
 
     // Draw using the renderer
     renderer_draw(&engine->engine_renderer, objects, scene->object_count);
