@@ -629,8 +629,9 @@ void renderer_draw(renderer *renderer, renderable_object **objects, int object_c
 
         if (obj->type == RO_DYNAMIC){
              if (current_batch != NULL) {
-                if (current_batch->object_count > 0){renderable_batch_flush(current_batch);}
-                
+                if (current_batch->object_count > 0){
+                    renderable_batch_flush(current_batch);
+                }
             }
             renderable_object_draw(obj);
             continue;
@@ -992,7 +993,7 @@ GLFWwindow* setup_opengl(int resolution_x, int resolution_y, const char *name){
 void opengl_set_default_state(){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // probabaly not a good idea, but not sure how to change in freetype to align (yet)
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 }

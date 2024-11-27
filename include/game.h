@@ -11,7 +11,9 @@ int is_colliding_between(minigl_obj *obj1, minigl_obj *obj2);
 int is_outside_screen(minigl_engine *engine, minigl_obj *obj);
 
 //MOVEMENT/INPUT
-void process_input(minigl_engine *minigl_engine, minigl_obj *obj);
+void process_input_generic(minigl_engine *minigl_engine, minigl_obj *obj);
+void process_input_menu(minigl_engine *minigl_engine, minigl_obj *obj);
+void process_input_lvledit(minigl_engine *minigl_engine, minigl_obj *obj);
 
 //LOADING
 void load_assets(minigl_engine *engine);
@@ -25,6 +27,8 @@ minigl_scene *create_scene_level2(minigl_engine *engine);
 void scene_gameplay_loop(minigl_engine *engine);
 
 
+minigl_scene *create_scene_lvledit(minigl_engine *engine);
+void scene_lvledit_loop(minigl_engine *engine);
 
 
 

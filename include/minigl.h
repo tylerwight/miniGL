@@ -47,6 +47,7 @@ typedef struct {
 
 
 minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_pos, int width, int height, color color, const char *texture_name, const char *shader_name, minigl_obj_type type);
+void minigl_obj_edit_quad(minigl_engine *engine, float x_pos, float y_pos, int width, int height, color color, const char *texture_name, const char *shader_name, minigl_obj_type type, minigl_obj *input_obj);
 void minigl_obj_set_position(minigl_obj *obj, float x_pos, float y_pos);
 int minigl_obj_compare(const void *a, const void *b);
 

@@ -30,26 +30,35 @@ void check_collision(minigl_engine *engine, minigl_obj *obj){
         int overlap_y = (obj->position[y] < current_obj->position[y] + current_obj->size[y] && 
                           obj->position[y] + obj->size[y] > current_obj->position[y]);
 
+
         if (overlap_x && overlap_y) {
             
             float overlap_right = (current_obj->position[x] + current_obj->size[x]) - obj->position[x]; 
             float overlap_left = (obj->position[x] + obj->size[x]) - current_obj->position[x];          
             float overlap_down = (current_obj->position[y] + current_obj->size[y]) - obj->position[y];  
-            float overlap_up = (obj->position[y] + obj->size[y]) - current_obj->position[y];            
+            float overlap_up = (obj->position[y] + obj->size[y]) - current_obj->position[y];        
 
-            if (overlap_left < overlap_right && overlap_left < overlap_down && overlap_left < overlap_up) {
+            if (overlap_up < overlap_down && overlap_up < overlap_left && overlap_up < overlap_right) { //collide top
+                if (obj->velocity[y] > -25.0f){
+                    minigl_obj_set_position(obj, obj->position[x], current_obj->position[y] - obj->size[y]);
+                } else {
+                    minigl_obj_set_position(obj, obj->position[x], current_obj->position[y] + current_obj->size[y]);
+                }
+
+                obj->velocity[y] = 0.0f;
+                printf("col Y1\n");
+            } else if (overlap_left < overlap_right && overlap_left < overlap_down && overlap_left < overlap_up) { //collide left
                 minigl_obj_set_position(obj, current_obj->position[x] - obj->size[x], obj->position[y]);
-                obj->velocity[x] = 0;
-            } else if (overlap_right < overlap_left && overlap_right < overlap_down && overlap_right < overlap_up) {
+                obj->velocity[x] = 0.0f;
+
+            } else if (overlap_right < overlap_left && overlap_right < overlap_down && overlap_right < overlap_up) { //collide right
                 minigl_obj_set_position(obj, current_obj->position[x] + current_obj->size[x], obj->position[y]);
-                obj->velocity[x] = 0;
-            } else if (overlap_up < overlap_down && overlap_up < overlap_left && overlap_up < overlap_right) {
-                minigl_obj_set_position(obj, obj->position[x], current_obj->position[y] - obj->size[y]);
-                obj->velocity[y] = 0;
-            } else {
+                obj->velocity[x] = 0.0f;
+
+            } else {                                                                                            //collide bottom
                 minigl_obj_set_position(obj, obj->position[x], current_obj->position[y] + current_obj->size[y]);
-                jumping = 0;
-                obj->velocity[y] = 0;
+                obj->velocity[y] = 0.0f;
+                printf("col Y2\n");
             }
         }
     }
@@ -100,7 +109,7 @@ int is_colliding_top(minigl_engine *engine, minigl_obj *obj) {
                          obj->position[x] + obj->size[x] > current_obj->position[x]);
 
         // Check if obj's bottom aligns with current_obj's top
-        int top_collision = (obj->position[y] + obj->size[y] == current_obj->position[y]);
+        int top_collision = (obj->position[y] == current_obj->position[y] + current_obj->size[y]);
 
         // Only return true if both conditions are met
         if (overlap_x && top_collision) {
@@ -133,13 +142,14 @@ int is_outside_screen(minigl_engine *engine, minigl_obj *obj) {
     int y = 1;
 
     // Get the window dimensions from the engine
-    float screen_width = engine->window_x;
-    float screen_height = engine->window_y;
+    float screen_width = engine->window_x + 20;
+    float screen_height = engine->window_y + 20;
+    float lower_bound = -20;
 
     // Check if the object is out of bounds in any direction
-    if (obj->position[x] + obj->size[x] < 0 ||        // Left side
+    if (obj->position[x] + obj->size[x] < lower_bound ||        // Left side
         obj->position[x] > screen_width ||            // Right side
-        obj->position[y] + obj->size[y] < 0 ||        // Bottom side
+        obj->position[y] + obj->size[y] < lower_bound ||        // Bottom side
         obj->position[y] > screen_height) {           // Top side
         return 1; // The object is outside the screen
     }
@@ -153,7 +163,93 @@ int is_outside_screen(minigl_engine *engine, minigl_obj *obj) {
 //////////////////////////
 //////MOVEMENT/INPUT////////////
 /////////////////////////
-void process_input(minigl_engine *minigl_engine, minigl_obj *obj){
+void process_input_generic(minigl_engine *minigl_engine, minigl_obj *obj){
+    int x = 0;
+    int y = 1;
+    static int wait = 0;
+    
+    //printf("speed: %f\nfriction : %f\ngravity: %f\n jumping: %d\n VelX %f\n VelY %f\n", speed, friction, gravity, jumping, obj->velocity[0], obj->velocity[1]);
+    //printf("X: %f, Y: %f\n", obj->position[x], obj->position[y]);
+
+    
+
+    if (obj->velocity[x] > 0.0f){
+        if (obj->velocity[x] < friction){
+            obj->velocity[x] = 0.0f;
+        }else{
+            obj->velocity[x] = obj->velocity[x] - friction;
+        }
+    }
+    if (obj->velocity[x] < 0.0f){
+        if (obj->velocity[x] > friction){
+            obj->velocity[x] = 0.0f;
+        }else{
+            obj->velocity[x] = obj->velocity[x] + friction;
+        }
+    }
+    if (obj->velocity[y] > 0.0f){
+        if (obj->velocity[y] < friction){
+            obj->velocity[y] = 0.0f;
+        }else{
+            obj->velocity[y] = obj->velocity[y] - friction;
+        }
+    }
+    if (obj->velocity[y] < 0.0f){
+        if (obj->velocity[y] > friction){
+            obj->velocity[y] = 0.0f;
+        }else{
+            obj->velocity[y] = obj->velocity[y] + friction;
+        }
+    }
+
+    if (obj->velocity[x] > -1.0f && obj->velocity[x] < 1.0f){ obj->velocity[x] = 0.0f;}
+    if (obj->velocity[y] > -1.0f && obj->velocity[y] < 1.0f){ obj->velocity[y] = 0.0f;}
+
+    if (is_colliding_top(minigl_engine, obj)){
+        jumping = 0;
+        obj->velocity[y] = 0;
+    } else{
+        obj->velocity[y] += gravity;
+    }
+
+    if (is_outside_screen(minigl_engine, obj)){
+        minigl_obj_set_position(obj, 25, 250);
+    }
+    
+
+    
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_ESCAPE)) {
+        glfwSetWindowShouldClose(minigl_engine->window, GLFW_TRUE);
+    }
+
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_SPACE)) {
+        if (jumping == 0){
+            jumping = 1;
+            obj->velocity[y] = jump_speed;
+            wait = 20;
+            
+        }
+
+        if (jumping == 1 && wait == 0){
+            jumping = 2;
+            obj->velocity[y] = jump_speed;
+        }
+
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
+        obj->velocity[x] = -speed;
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
+        //obj->velocity[y] = -speed;
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
+        obj->velocity[x] = speed;
+    }
+
+    if (wait > 0){wait--;};
+}
+
+void process_input_menu(minigl_engine *minigl_engine, minigl_obj *obj){
     int x = 0;
     int y = 1;
     static int wait = 0;
@@ -202,7 +298,7 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj){
     }
 
     if (is_outside_screen(minigl_engine, obj)){
-        minigl_obj_set_position(obj, 100, 200);
+        minigl_obj_set_position(obj, 512, 700);
     }
     
 
@@ -237,6 +333,97 @@ void process_input(minigl_engine *minigl_engine, minigl_obj *obj){
 
     if (wait > 0){wait--;};
 }
+
+
+
+void process_input_lvledit(minigl_engine *minigl_engine, minigl_obj *obj){
+    int x = 0;
+    int y = 1;
+    static int wait = 0;
+    
+    //printf("speed: %f\nfriction : %f\ngravity: %f\n jumping: %d\n VelX %f\n VelY %f\n", speed, friction, gravity, jumping, obj->velocity[0], obj->velocity[1]);
+    //printf("X: %f, Y: %f\n", obj->position[x], obj->position[y]);
+    float friction_lvledit = 0.8f;
+    float speed_lvledit = 2.0f;
+    int resize_speed = 5;
+    
+
+    if (obj->velocity[x] > 0.0f){
+        if (obj->velocity[x] < friction_lvledit){
+            obj->velocity[x] = 0.0f;
+        }else{
+            obj->velocity[x] = obj->velocity[x] - friction_lvledit;
+        }
+    }
+    if (obj->velocity[x] < 0.0f){
+        if (obj->velocity[x] > friction_lvledit){
+            obj->velocity[x] = 0.0f;
+        }else{
+            obj->velocity[x] = obj->velocity[x] + friction_lvledit;
+        }
+    }
+    if (obj->velocity[y] > 0.0f){
+        if (obj->velocity[y] < friction_lvledit){
+            obj->velocity[y] = 0.0f;
+        }else{
+            obj->velocity[y] = obj->velocity[y] - friction_lvledit;
+        }
+    }
+    if (obj->velocity[y] < 0.0f){
+        if (obj->velocity[y] > friction_lvledit){
+            obj->velocity[y] = 0.0f;
+        }else{
+            obj->velocity[y] = obj->velocity[y] + friction_lvledit;
+        }
+    }
+
+    if (obj->velocity[x] > -1.0f && obj->velocity[x] < 1.0f){ obj->velocity[x] = 0.0f;}
+    if (obj->velocity[y] > -1.0f && obj->velocity[y] < 1.0f){ obj->velocity[y] = 0.0f;}
+
+    
+
+
+
+    
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_ESCAPE)) {
+        glfwSetWindowShouldClose(minigl_engine->window, GLFW_TRUE);
+    }
+
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
+        obj->velocity[x] = -speed_lvledit;
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
+        obj->velocity[y] = -speed_lvledit;
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
+        obj->velocity[x] = speed_lvledit;
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W)) {
+        obj->velocity[y] = speed_lvledit;
+    }
+
+    color red, green, blue;
+    color_set(&red, 1.0f, 0.4f, 0.0f, 1.0f);
+    color_set(&green, 0.4f, 1.0f, 0.0f, 1.0f);
+    color_set(&blue, 0.4f, 0.0f, 1.0f, 1.0f);
+
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_UP)) {
+        minigl_obj_edit_quad(minigl_engine, obj->position[0], obj->position[1], obj->size[0], obj->size[1]+resize_speed, green, NULL , "mainshader", MINIGL_DYNAMIC, obj);
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_DOWN)) {
+        minigl_obj_edit_quad(minigl_engine, obj->position[0], obj->position[1], obj->size[0], obj->size[1]-resize_speed, green, NULL , "mainshader", MINIGL_DYNAMIC, obj);
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_LEFT)) {
+        minigl_obj_edit_quad(minigl_engine, obj->position[0], obj->position[1], obj->size[0]-resize_speed, obj->size[1], green, NULL , "mainshader", MINIGL_DYNAMIC, obj);
+    }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_RIGHT)) {
+        minigl_obj_edit_quad(minigl_engine, obj->position[0], obj->position[1], obj->size[0]+resize_speed, obj->size[1], green, NULL , "mainshader", MINIGL_DYNAMIC, obj);
+    }
+
+
+}
+
+
 
 
 //////////////////////////
@@ -290,15 +477,16 @@ minigl_scene *create_scene_menu(minigl_engine *engine){
 
 minigl_scene *create_scene_level1(minigl_engine *engine){
     //create some colors
-    color red, green, blue, purple;
+    color red, green, blue, purple, yellow;
     color_set(&red, 1.0f, 0.0f, 0.0f, 1.0f);
     color_set(&green, 0.0f, 1.0f, 0.0f, 1.0f);
     color_set(&blue, 0.0f, 0.0f, 1.0f, 1.0f);
     color_set(&purple, 0.5f, 0.0f, 0.5f, 1.0f);
+    color_set(&yellow, 1.0f, 1.0f, 0.0f, 1.0f);
 
-    int object_count = 9;
+    int object_count = 11;
     minigl_obj *objects[object_count];
-    objects[0] = minigl_obj_create_quad(engine, 10.0f, 350.0f, 25, 25, green, NULL , "mainshader", MINIGL_DYNAMIC);
+    objects[0] = minigl_obj_create_quad(engine, 25.0f, 250.0f, 25, 25, green, NULL , "mainshader", MINIGL_DYNAMIC); // player
     objects[1] = minigl_obj_create_quad(engine, 0.0f, 50.0f, 200, 100, red, NULL, "mainshader", MINIGL_STATIC);
     objects[2] = minigl_obj_create_quad(engine, 700.0f, 50.0f, 300, 100, red, NULL, "mainshader", MINIGL_STATIC);
     objects[3] = minigl_obj_create_quad(engine, 250.0f, 200.0f, 50, 25, red, NULL, "mainshader", MINIGL_STATIC);
@@ -307,11 +495,14 @@ minigl_scene *create_scene_level1(minigl_engine *engine){
     objects[6] = minigl_obj_create_quad(engine, 1000.0f, 50.0f, 25, 700, red, NULL, "mainshader", MINIGL_STATIC);
     objects[7] = minigl_obj_create_quad(engine, 0.0f, 700.0f, 1024, 200, blue, NULL, "mainshader", MINIGL_STATIC);
     objects[8] = minigl_obj_create_quad(engine, 850.0f, 150.0f, 25, 25, purple, NULL, "mainshader", MINIGL_STATIC);
+    objects[9] = minigl_obj_create_quad(engine, 300.0f, 100.0f, 25, 450, yellow, NULL, "mainshader", MINIGL_STATIC);
+    objects[10] = minigl_obj_create_quad(engine, 25.0f, 375.0f, 50, 25, red, NULL, "mainshader", MINIGL_STATIC);
 
     minigl_scene *scene = minigl_scene_create();
 
     minigl_scene_attach_object_many(scene, objects, object_count);
     scene->scene_loop = scene_gameplay_loop;
+    //scene->scene_loop = scene_lvledit_loop;
     return scene;
 }
 
@@ -322,7 +513,7 @@ minigl_scene *create_scene_level2(minigl_engine *engine){
     color_set(&green, 0.4f, 1.0f, 0.0f, 1.0f);
     color_set(&blue, 0.4f, 0.0f, 1.0f, 1.0f);
 
-    int object_count = 9;
+    int object_count = 10;
     minigl_obj *objects[object_count];
     objects[0] = minigl_obj_create_quad(engine, 10.0f, 350.0f, 25, 25, green, NULL , "mainshader", MINIGL_DYNAMIC);
     objects[1] = minigl_obj_create_quad(engine, 0.0f, 50.0f, 200, 100, red, NULL, "mainshader", MINIGL_STATIC);
@@ -333,11 +524,35 @@ minigl_scene *create_scene_level2(minigl_engine *engine){
     objects[6] = minigl_obj_create_quad(engine, 1000.0f, 50.0f, 25, 700, red, NULL, "mainshader", MINIGL_STATIC);
     objects[7] = minigl_obj_create_quad(engine, 0.0f, 700.0f, 1024, 200, blue, NULL, "mainshader", MINIGL_STATIC);
     objects[8] = minigl_obj_create_quad(engine, 440.0f, 250.0f, 50, 25, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[9] = minigl_obj_create_quad(engine, 650.0f, 150.0f, 25, 25, green, NULL, "mainshader", MINIGL_STATIC);
+
 
     minigl_scene *scene = minigl_scene_create();
 
     minigl_scene_attach_object_many(scene, objects, object_count);
     scene->scene_loop = scene_gameplay_loop;
+
+    return scene;
+}
+
+
+minigl_scene *create_scene_lvledit(minigl_engine *engine){
+    //create some colors
+    color red, green, blue;
+    color_set(&red, 1.0f, 0.4f, 0.0f, 1.0f);
+    color_set(&green, 0.4f, 1.0f, 0.0f, 1.0f);
+    color_set(&blue, 0.4f, 0.0f, 1.0f, 1.0f);
+
+    int object_count = 1;
+    minigl_obj *objects[object_count];
+    objects[0] = minigl_obj_create_quad(engine, 10.0f, 350.0f, 25, 25, green, NULL , "mainshader", MINIGL_DYNAMIC);
+
+
+
+    minigl_scene *scene = minigl_scene_create();
+
+    minigl_scene_attach_object_many(scene, objects, object_count);
+    scene->scene_loop = scene_lvledit_loop;
 
     return scene;
 }
@@ -363,7 +578,7 @@ void scene_menu_loop(minigl_engine *engine){
 
     while (engine->accumulated_frame_time >= PHYSICS_TIMESTEP) {
         
-        process_input(engine, engine->scenes[engine->current_scene]->objects[0]);
+        process_input_menu(engine, engine->scenes[engine->current_scene]->objects[0]);
         minigl_process_movement(engine, PHYSICS_TIMESTEP); // Call with fixed timestep
         if (is_colliding_between(engine->scenes[1]->objects[0], engine->scenes[1]->objects[8])){engine->current_scene = 2;}
 
@@ -379,12 +594,40 @@ void scene_gameplay_loop(minigl_engine *engine){
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     while (engine->accumulated_frame_time >= PHYSICS_TIMESTEP) {
-        
-        process_input(engine, engine->scenes[engine->current_scene]->objects[0]);
+
+        if (is_key_down(&engine->engine_input_manager, GLFW_KEY_F12)) {
+                engine->scenes[engine->current_scene]->scene_loop = scene_lvledit_loop;
+        }
+
+        process_input_generic(engine, engine->scenes[engine->current_scene]->objects[0]);
         minigl_process_movement(engine, PHYSICS_TIMESTEP); // Call with fixed timestep
         if (is_colliding_between(engine->scenes[1]->objects[0], engine->scenes[1]->objects[8])){engine->current_scene = 2;}
+        if (is_colliding_between(engine->scenes[1]->objects[0], engine->scenes[1]->objects[9])){minigl_obj_set_position(engine->scenes[1]->objects[0], 50.0f, 300.0f);}
 
         check_collision(engine, engine->scenes[engine->current_scene]->objects[0]);
+        engine->accumulated_frame_time -= PHYSICS_TIMESTEP;
+    }
+
+}
+
+
+void scene_lvledit_loop(minigl_engine *engine){
+    glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    while (engine->accumulated_frame_time >= PHYSICS_TIMESTEP) {
+        
+        if (is_key_down(&engine->engine_input_manager, GLFW_KEY_F12)) {
+                color green;
+                color_set(&green, 0.4f, 1.0f, 0.0f, 1.0f);
+                minigl_obj_edit_quad(engine, 25, 250, 25, 25, green, NULL , "mainshader", MINIGL_DYNAMIC, engine->scenes[engine->current_scene]->objects[0]);
+                engine->scenes[engine->current_scene]->scene_loop = scene_gameplay_loop;
+        }
+
+        process_input_lvledit(engine, engine->scenes[engine->current_scene]->objects[0]);
+        minigl_process_movement(engine, PHYSICS_TIMESTEP); // Call with fixed timestep
+        printf("X: %f, Y: %f\n", engine->scenes[engine->current_scene]->objects[0]->position[0], engine->scenes[engine->current_scene]->objects[0]->position[1]);
+        printf("Width: %d, Height: %d\n", engine->scenes[engine->current_scene]->objects[0]->size[0], engine->scenes[engine->current_scene]->objects[0]->size[1]);
+
         engine->accumulated_frame_time -= PHYSICS_TIMESTEP;
     }
 

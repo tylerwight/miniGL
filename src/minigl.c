@@ -34,6 +34,37 @@ minigl_obj *minigl_obj_create_quad(minigl_engine *engine, float x_pos, float y_p
 
 }
 
+
+
+void minigl_obj_edit_quad(minigl_engine *engine, float x_pos, float y_pos, int width, int height, color color, const char *texture_name, const char *shader_name, minigl_obj_type type, minigl_obj *input_obj){
+
+
+    texture *obj_texture = minigl_texture_get_by_name(engine, texture_name);
+    shader *obj_shader = minigl_shader_get_by_name(engine, shader_name);
+
+    quad *obj_quad = quad_create(x_pos, y_pos, width, height,  color, obj_texture);
+
+    renderable_object_create_fromquad(input_obj->renderable, obj_quad, obj_shader);
+
+    free(obj_quad);
+
+    if (type == MINIGL_STATIC){
+        input_obj->renderable->type = RO_STATIC;
+    } else {
+        input_obj->renderable->type = RO_DYNAMIC;
+    }
+
+
+    input_obj->position[0] = x_pos;
+    input_obj->position[1] = y_pos;
+    input_obj->size[0] = width;
+    input_obj->size[1] = height;
+    input_obj->type = type;
+
+    
+
+}
+
 void minigl_obj_set_position(minigl_obj *obj, float x_pos, float y_pos){
     float x_delta = x_pos - obj->position[0];
     float y_delta = y_pos - obj->position[1];
@@ -170,6 +201,9 @@ void minigl_scene_run_loop(minigl_engine *engine){
 //     renderer_draw(&engine->engine_renderer, objects, scene->object_count);
 //     free(objects);
 // }
+
+
+
 void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene) {
     // Create an array of minigl_obj pointers for sorting
     minigl_obj **obj_array = calloc(scene->object_count, sizeof(minigl_obj *));

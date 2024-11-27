@@ -7,10 +7,13 @@
 //todo
 //fix under collision bug
 //fix memory leak
-//add kill block
 //add art
 //add sounds
+//create 3 levels
+
+//done
 //refactor
+//add kill block
 
 
 int main(){
@@ -29,7 +32,7 @@ int main(){
 
 
     audio_source *music_source = audio_manager_create_source(&CHASAM_CHASER->audio_manager, "sneksong");
-    audio_manager_play_source(music_source, 1);
+    //audio_manager_play_source(music_source, 1);
 
     double prev_time = glfwGetTime();
     CHASAM_CHASER->accumulated_frame_time = 0.0;
