@@ -20,7 +20,7 @@ ifeq ($(OS), Windows_NT)
     # Windows-specific settings
     INCLUDES = -I$(INC_DIR) -I/ucrt64/include/freetype2 -I/ucrt64/include/libpng16 -I/ucrt64/include/glib-2.0 -I/ucrt64/lib/glib-2.0/include
     LIBS = -lm -lglfw3 -lglew32 -lopengl32  -lpng -lz -lopenal -lalut -lbrotlidec -lbrotlienc -lbrotlicommon -lgdi32 -lbz2 -lgraphite2 -lrpcrt4 -lstdc++ 
-    LDFLAGS = -L/ucrt64/lib -static $(LIBS) -mwindows
+    LDFLAGS = -L/ucrt64/lib $(LIBS) -mwindows
 else
     # Linux-specific settings
     INCLUDES = -I$(INC_DIR) -I/usr/include/freetype2 -I/usr/include/libpng16
@@ -29,7 +29,7 @@ else
 endif
 
 # Compiler flags
-CFLAGS = $(INCLUDES) -Wall -Wextra -O2
+CFLAGS = $(INCLUDES) -Wall -Wextra -O2 -Wno-incompatible-pointer-types
 
 # Default rule
 all: $(TARGET)

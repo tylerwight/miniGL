@@ -436,6 +436,7 @@ void load_assets(minigl_engine *engine){
     minigl_texture_load(engine, "assets/snek_head.png", "head");
     minigl_texture_load(engine, "assets/snek_body1.png", "body1");
     minigl_texture_load(engine, "assets/title.png", "title");
+    minigl_texture_load(engine, "assets/win.png", "win");
     audio_manager_load_sound(&engine->audio_manager, "assets/example.wav", "test");
     audio_manager_load_sound(&engine->audio_manager, "assets/sneksong.wav", "sneksong");
     audio_manager_load_sound(&engine->audio_manager, "assets/eat_snek.wav", "eat");
@@ -584,7 +585,7 @@ minigl_scene *create_scene_level3(minigl_engine *engine){
     objects[1] = minigl_obj_create_quad(engine, 0.0f, 50.0f, 100, 25, red, NULL, "mainshader", MINIGL_STATIC);
     objects[2] = minigl_obj_create_quad(engine, 25.0f, 125.0f, 245, 25, red, NULL, "mainshader", MINIGL_STATIC);
     objects[3] = minigl_obj_create_quad(engine, 960.0f, 150.0f, 40, 25, red, NULL, "mainshader", MINIGL_STATIC);
-    objects[4] = minigl_obj_create_quad(engine, 615.0f, 00.0f, 430, 25, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[4] = minigl_obj_create_quad(engine, 605.0f, 00.0f, 440, 25, red, NULL, "mainshader", MINIGL_STATIC);
     objects[5] = minigl_obj_create_quad(engine, 0.0f, 50.0f, 25, 700, red, NULL, "mainshader", MINIGL_STATIC);
     objects[6] = minigl_obj_create_quad(engine, 1000.0f, 25.0f, 25, 725, red, NULL, "mainshader", MINIGL_STATIC);
     objects[7] = minigl_obj_create_quad(engine, 0.0f, 750.0f, 1024, 200, blue, NULL, "mainshader", MINIGL_STATIC);
@@ -619,7 +620,7 @@ minigl_scene *create_scene_win(minigl_engine *engine){
     minigl_obj *objects[object_count];
     objects[0] = minigl_obj_create_quad(engine, 512.0f, 700.0f, 25, 25, green, NULL , "mainshader", MINIGL_DYNAMIC);
     objects[1] = minigl_obj_create_quad(engine, 250.0f, 50.0f, 500, 100, blue, NULL, "mainshader", MINIGL_STATIC);
-    objects[2] = minigl_obj_create_quad(engine, 0.0f, 0.0f, 1024, 768, red, "title", "mainshader", MINIGL_BACKGROUND);
+    objects[2] = minigl_obj_create_quad(engine, 0.0f, 0.0f, 1024, 768, red, "win", "mainshader", MINIGL_BACKGROUND);
 
 
     minigl_scene *scene = minigl_scene_create();
