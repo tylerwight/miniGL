@@ -18,7 +18,14 @@
 #include <string.h>
 #include <time.h>
 
-#define ASSERT(x) if (!(x)) raise(SIGTRAP);
+
+#ifdef _WIN32
+    #include <intrin.h>
+    #define ASSERT(x) if (!(x)) __debugbreak();
+#else
+    #define ASSERT(x) if (!(x)) raise(SIGTRAP);
+#endif
+
 #define GLCall(x) GLClearError();\
     x;\
     ASSERT(GLLogCall(#x, __FILE__, __LINE__))

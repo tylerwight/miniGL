@@ -12,3 +12,9 @@ I am trying to learn more about OpenGL, this abstraction may be based on some si
 
 
 ![alt text](assets/image.png)
+
+
+
+# tmp
+
+$ pacman -S mingw-w64-ucrt-x86_64-openal

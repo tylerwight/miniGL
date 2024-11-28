@@ -18,13 +18,13 @@ OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 # Detect the operating system
 ifeq ($(OS), Windows_NT)
     # Windows-specific settings
-    INCLUDES = -I$(INC_DIR) -I/ucrt64/include/freetype2 -I/ucrt64/include/libpng16 -I/ucrt64/include/harfbuzz -I/ucrt64/include/glib-2.0 -I/ucrt64/lib/glib-2.0/include
-    LIBS = -lm -lglfw3 -lglew32 -lopengl32 -lfreetype -lpng -lz -lbrotlidec -lbrotlienc -lbrotlicommon -lgdi32 -lbz2 -lharfbuzz -lgraphite2 -lrpcrt4 -lstdc++
+    INCLUDES = -I$(INC_DIR) -I/ucrt64/include/freetype2 -I/ucrt64/include/libpng16 -I/ucrt64/include/glib-2.0 -I/ucrt64/lib/glib-2.0/include
+    LIBS = -lm -lglfw3 -lglew32 -lopengl32  -lpng -lz -lopenal -lalut -lbrotlidec -lbrotlienc -lbrotlicommon -lgdi32 -lbz2 -lgraphite2 -lrpcrt4 -lstdc++ 
     LDFLAGS = -L/ucrt64/lib -static $(LIBS) -mwindows
 else
     # Linux-specific settings
     INCLUDES = -I$(INC_DIR) -I/usr/include/freetype2 -I/usr/include/libpng16
-    LIBS = -lm -lglfw -lGLEW -lGL -lfreetype -lopenal -lalut
+    LIBS = -lm -lglfw -lGLEW -lGL -lopenal -lalut
     LDFLAGS = $(LIBS)
 endif
 
