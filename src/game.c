@@ -139,9 +139,9 @@ int is_outside_screen(minigl_engine *engine, minigl_obj *obj) {
     int y = 1;
 
     // Get the window dimensions from the engine
-    float screen_width = engine->window_x + 20;
-    float screen_height = engine->window_y + 20;
-    float lower_bound = -20;
+    float screen_width = engine->window_x + 40;
+    float screen_height = engine->window_y + 40;
+    float lower_bound = -40;
 
     // Check if the object is out of bounds in any direction
     if (obj->position[x] + obj->size[x] < lower_bound ||        // Left side
