@@ -224,7 +224,7 @@ void process_input_generic(minigl_engine *minigl_engine, minigl_obj *obj){
         glfwSetWindowShouldClose(minigl_engine->window, GLFW_TRUE);
     }
 
-    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_SPACE)) {
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_SPACE) || is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W) || is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_UP)) {
         if (jumping == 0){
             jumping = 1;
             obj->velocity[y] = jump_speed;
@@ -238,13 +238,13 @@ void process_input_generic(minigl_engine *minigl_engine, minigl_obj *obj){
         }
 
     }
-    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A) || is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_LEFT)) {
         obj->velocity[x] = -speed;
     }
-    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
-        //obj->velocity[y] = -speed;
-    }
-    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
+    // if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
+    //     //obj->velocity[y] = -speed;
+    // }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D) || is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_RIGHT)) {
         obj->velocity[x] = speed;
     }
 
