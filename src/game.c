@@ -309,11 +309,11 @@ void process_input_menu(minigl_engine *minigl_engine, minigl_obj *obj){
         glfwSetWindowShouldClose(minigl_engine->window, GLFW_TRUE);
     }
 
-    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_SPACE)) {
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_SPACE) || is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_W) || is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_UP)) {
         if (jumping == 0){
             jumping = 1;
             obj->velocity[y] = jump_speed;
-            wait = 25;
+            wait = 20;
             
         }
 
@@ -323,13 +323,13 @@ void process_input_menu(minigl_engine *minigl_engine, minigl_obj *obj){
         }
 
     }
-    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A)) {
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_A) || is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_LEFT)) {
         obj->velocity[x] = -speed;
     }
-    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
-        //obj->velocity[y] = -speed;
-    }
-    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D)) {
+    // if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_S)) {
+    //     //obj->velocity[y] = -speed;
+    // }
+    if (is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_D) || is_key_down(&minigl_engine->engine_input_manager, GLFW_KEY_RIGHT)) {
         obj->velocity[x] = speed;
     }
 
@@ -653,7 +653,7 @@ void scene_menu_loop(minigl_engine *engine){
         
         process_input_menu(engine, engine->scenes[engine->current_scene]->objects[0]);
         minigl_process_movement(engine, PHYSICS_TIMESTEP); // Call with fixed timestep
-        if (is_colliding_between(engine->scenes[1]->objects[0], engine->scenes[1]->objects[8])){engine->current_scene = 2;}
+        //if (is_colliding_between(engine->scenes[1]->objects[0], engine->scenes[1]->objects[8])){engine->current_scene = 2;}
 
         check_collision(engine, engine->scenes[engine->current_scene]->objects[0]);
         engine->accumulated_frame_time -= PHYSICS_TIMESTEP;
