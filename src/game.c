@@ -682,7 +682,7 @@ void scene_gameplay_loop(minigl_engine *engine){
             if (is_colliding_between(engine->scenes[2]->objects[0], engine->scenes[2]->objects[9]) || is_colliding_between(engine->scenes[2]->objects[0], engine->scenes[2]->objects[14])){minigl_obj_set_position(engine->scenes[2]->objects[0], 25.0f, 200.0f);}
         }
         if (engine->current_scene == 3){
-            if (is_colliding_between(engine->scenes[3]->objects[0], engine->scenes[3]->objects[8])){engine->current_scene = 3;}
+            if (is_colliding_between(engine->scenes[3]->objects[0], engine->scenes[3]->objects[8])){engine->current_scene = 4;}
             if (is_colliding_between(engine->scenes[3]->objects[0], engine->scenes[3]->objects[9])){minigl_obj_set_position(engine->scenes[3]->objects[0], 25.0f, 200.0f);}
         }
 

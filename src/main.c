@@ -24,11 +24,13 @@ int main(){
     minigl_scene *level1 = create_scene_level1(CHASAM_CHASER);
     minigl_scene *level2 = create_scene_level2(CHASAM_CHASER); 
     minigl_scene *level3 = create_scene_level3(CHASAM_CHASER); 
+    minigl_scene *scene_win = create_scene_win(CHASAM_CHASER); 
 
     minigl_engine_attach_scene(CHASAM_CHASER, scene_menu);
     minigl_engine_attach_scene(CHASAM_CHASER, level1);
     minigl_engine_attach_scene(CHASAM_CHASER, level2);
     minigl_engine_attach_scene(CHASAM_CHASER, level3);
+    minigl_engine_attach_scene(CHASAM_CHASER, scene_win);
 
     CHASAM_CHASER->current_scene = 0;
 
@@ -51,12 +53,21 @@ int main(){
         prev_time = current_time;
         CHASAM_CHASER->accumulated_frame_time += frame_time;
 
+
+        if (CHASAM_CHASER->accumulated_frame_time >= PHYSICS_TIMESTEP) { //update viewport when resized
+            int window_w;
+            int window_h;
+            glfwGetWindowSize(CHASAM_CHASER->window, &window_w, &window_h);
+            glViewport(0, 0, window_w, window_h);
+        }
+
         minigl_scene_run_loop(CHASAM_CHASER);
         minigl_draw(CHASAM_CHASER);
         
         //put FPS in title bar
         frame_count++;
         if (current_time - fps_last_time >= 1.0) {
+
             int fps = frame_count;
             char title[256];
             snprintf(title, sizeof(title), "miniGL - [FPS: %d]", fps);
