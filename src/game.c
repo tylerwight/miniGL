@@ -596,7 +596,7 @@ minigl_scene *create_scene_level3(minigl_engine *engine){
     objects[13] = minigl_obj_create_quad(engine, 960.0f, 650.0f, 40, 25, red, NULL, "mainshader", MINIGL_STATIC);
     objects[14] = minigl_obj_create_quad(engine, 685.0f, 535.0f, 200, 25, red, NULL, "mainshader", MINIGL_STATIC);
     objects[15] = minigl_obj_create_quad(engine, 195.0f, 575.0f, 25, 25, red, NULL, "mainshader", MINIGL_STATIC);
-    objects[16] = minigl_obj_create_quad(engine, 300.0f, 435.0f, 25, 25, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[16] = minigl_obj_create_quad(engine, 315.0f, 435.0f, 25, 25, red, NULL, "mainshader", MINIGL_STATIC);
 
 
     minigl_scene *scene = minigl_scene_create();
@@ -699,14 +699,14 @@ void scene_lvledit_loop(minigl_engine *engine){
     glClear(GL_COLOR_BUFFER_BIT);
     while (engine->accumulated_frame_time >= PHYSICS_TIMESTEP) {
         
-        if (is_key_down(&engine->engine_input_manager, GLFW_KEY_F12)) {
+        if (is_key_down(&engine->engine_input_manager, GLFW_KEY_F11)) {
                 color green;
                 color_set(&green, 0.4f, 1.0f, 0.0f, 1.0f);
                 minigl_obj_edit_quad(engine, engine->scenes[engine->current_scene]->objects[0]->position[0], engine->scenes[engine->current_scene]->objects[0]->position[1], 25, 25, green, NULL , "mainshader", MINIGL_DYNAMIC, engine->scenes[engine->current_scene]->objects[0]);
                 engine->scenes[engine->current_scene]->scene_loop = scene_gameplay_loop;
         }
 
-        if (is_key_down(&engine->engine_input_manager, GLFW_KEY_F11)){
+        if (is_key_down(&engine->engine_input_manager, GLFW_KEY_F10)){
             engine->current_scene++;
         }
 
