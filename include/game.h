@@ -24,6 +24,9 @@ void scene_menu_loop(minigl_engine *engine);
 
 minigl_scene *create_scene_level1(minigl_engine *engine);
 minigl_scene *create_scene_level2(minigl_engine *engine);
+minigl_scene *create_scene_level3(minigl_engine *engine);
+minigl_scene *create_scene_win(minigl_engine *engine);
+
 void scene_gameplay_loop(minigl_engine *engine);
 
 

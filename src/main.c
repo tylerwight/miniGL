@@ -23,10 +23,12 @@ int main(){
     minigl_scene *scene_menu = create_scene_menu(CHASAM_CHASER);
     minigl_scene *level1 = create_scene_level1(CHASAM_CHASER);
     minigl_scene *level2 = create_scene_level2(CHASAM_CHASER); 
+    minigl_scene *level3 = create_scene_level3(CHASAM_CHASER); 
 
     minigl_engine_attach_scene(CHASAM_CHASER, scene_menu);
     minigl_engine_attach_scene(CHASAM_CHASER, level1);
     minigl_engine_attach_scene(CHASAM_CHASER, level2);
+    minigl_engine_attach_scene(CHASAM_CHASER, level3);
 
     CHASAM_CHASER->current_scene = 0;
 
