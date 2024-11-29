@@ -141,7 +141,7 @@ int is_outside_screen(minigl_engine *engine, minigl_obj *obj) {
     // Get the window dimensions from the engine
     float screen_width = engine->window_x + 40;
     float screen_height = engine->window_y + 40;
-    float lower_bound = -40;
+    float lower_bound = -100;
 
     // Check if the object is out of bounds in any direction
     if (obj->position[x] + obj->size[x] < lower_bound ||        // Left side
@@ -597,7 +597,7 @@ minigl_scene *create_scene_level3(minigl_engine *engine){
     objects[13] = minigl_obj_create_quad(engine, 960.0f, 650.0f, 40, 25, red, NULL, "mainshader", MINIGL_STATIC);
     objects[14] = minigl_obj_create_quad(engine, 685.0f, 535.0f, 200, 25, red, NULL, "mainshader", MINIGL_STATIC);
     objects[15] = minigl_obj_create_quad(engine, 195.0f, 575.0f, 25, 25, red, NULL, "mainshader", MINIGL_STATIC);
-    objects[16] = minigl_obj_create_quad(engine, 315.0f, 435.0f, 25, 25, red, NULL, "mainshader", MINIGL_STATIC);
+    objects[16] = minigl_obj_create_quad(engine, 320.0f, 435.0f, 25, 25, red, NULL, "mainshader", MINIGL_STATIC);
 
 
     minigl_scene *scene = minigl_scene_create();
