@@ -17,52 +17,52 @@
 
 
 int main(){
-    minigl_engine *CHASAM_CHASER = minigl_init(1024.0f, 768.0f, "miniGL");
-    load_assets(CHASAM_CHASER);
+    minigl_engine *CHASAM_JUMP = minigl_init(1024.0f, 768.0f, "miniGL");
+    load_assets(CHASAM_JUMP);
 
-    minigl_scene *scene_menu = create_scene_menu(CHASAM_CHASER);
-    minigl_scene *level1 = create_scene_level1(CHASAM_CHASER);
-    minigl_scene *level2 = create_scene_level2(CHASAM_CHASER); 
-    minigl_scene *level3 = create_scene_level3(CHASAM_CHASER); 
-    minigl_scene *scene_win = create_scene_win(CHASAM_CHASER); 
+    minigl_scene *scene_menu = create_scene_menu(CHASAM_JUMP);
+    minigl_scene *level1 = create_scene_level1(CHASAM_JUMP);
+    minigl_scene *level2 = create_scene_level2(CHASAM_JUMP); 
+    minigl_scene *level3 = create_scene_level3(CHASAM_JUMP); 
+    minigl_scene *scene_win = create_scene_win(CHASAM_JUMP); 
 
-    minigl_engine_attach_scene(CHASAM_CHASER, scene_menu);
-    minigl_engine_attach_scene(CHASAM_CHASER, level1);
-    minigl_engine_attach_scene(CHASAM_CHASER, level2);
-    minigl_engine_attach_scene(CHASAM_CHASER, level3);
-    minigl_engine_attach_scene(CHASAM_CHASER, scene_win);
+    minigl_engine_attach_scene(CHASAM_JUMP, scene_menu);
+    minigl_engine_attach_scene(CHASAM_JUMP, level1);
+    minigl_engine_attach_scene(CHASAM_JUMP, level2);
+    minigl_engine_attach_scene(CHASAM_JUMP, level3);
+    minigl_engine_attach_scene(CHASAM_JUMP, scene_win);
 
-    CHASAM_CHASER->current_scene = 0;
+    CHASAM_JUMP->current_scene = 0;
 
 
-    audio_source *music_source = audio_manager_create_source(&CHASAM_CHASER->audio_manager, "sneksong");
+    audio_source *music_source = audio_manager_create_source(&CHASAM_JUMP->audio_manager, "sneksong");
     //audio_manager_play_source(music_source, 1);
 
     double prev_time = glfwGetTime();
-    CHASAM_CHASER->accumulated_frame_time = 0.0;
+    CHASAM_JUMP->accumulated_frame_time = 0.0;
     int frame_count = 0;
     double fps_last_time = prev_time;
 
     //main loop
-    while (!glfwWindowShouldClose(CHASAM_CHASER->window)){ // game loop
-        update_input(&(CHASAM_CHASER->engine_input_manager));
+    while (!glfwWindowShouldClose(CHASAM_JUMP->window)){ // game loop
+        update_input(&(CHASAM_JUMP->engine_input_manager));
         glfwPollEvents();
         
         double current_time = glfwGetTime();
         double frame_time = current_time - prev_time;
         prev_time = current_time;
-        CHASAM_CHASER->accumulated_frame_time += frame_time;
+        CHASAM_JUMP->accumulated_frame_time += frame_time;
 
 
-        if (CHASAM_CHASER->accumulated_frame_time >= PHYSICS_TIMESTEP) { //update viewport when resized
+        if (CHASAM_JUMP->accumulated_frame_time >= PHYSICS_TIMESTEP) { //update viewport when resized
             int window_w;
             int window_h;
-            glfwGetWindowSize(CHASAM_CHASER->window, &window_w, &window_h);
+            glfwGetWindowSize(CHASAM_JUMP->window, &window_w, &window_h);
             glViewport(0, 0, window_w, window_h);
         }
 
-        minigl_scene_run_loop(CHASAM_CHASER);
-        minigl_draw(CHASAM_CHASER);
+        minigl_scene_run_loop(CHASAM_JUMP);
+        minigl_draw(CHASAM_JUMP);
         
         //put FPS in title bar
         frame_count++;
@@ -71,18 +71,18 @@ int main(){
             int fps = frame_count;
             char title[256];
             snprintf(title, sizeof(title), "miniGL - [FPS: %d]", fps);
-            glfwSetWindowTitle(CHASAM_CHASER->window, title);
+            glfwSetWindowTitle(CHASAM_JUMP->window, title);
             frame_count = 0;
             fps_last_time = current_time;
         }
 
-        audio_manager_update(&CHASAM_CHASER->audio_manager);
-        glfwSwapBuffers(CHASAM_CHASER->window);
+        audio_manager_update(&CHASAM_JUMP->audio_manager);
+        glfwSwapBuffers(CHASAM_JUMP->window);
     }
 
 
     glfwTerminate();
-    audio_manager_cleanup(&CHASAM_CHASER->audio_manager);
+    audio_manager_cleanup(&CHASAM_JUMP->audio_manager);
     return 0;
 }
 
