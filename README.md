@@ -1,20 +1,29 @@
 # miniGL
 
 
-A small and simple 2D OpenGL "engine" in C using: 
+A small and simple 2D OpenGL engine in C using: 
 - GLFW - multi platform OpenGL
 - GLEW - OpenGL extensions
 - Nuklear - menus
-- OpenAL - audio (todo)
+- OpenAL - audio 
+- stb_image.h - image loading
 
 
-I am trying to learn more about OpenGL, this abstraction may be based on some silly ideas/assumptions.
+This engine handles rendering, texturing, batch rendering, audio, input, for openGL is a simple package. A simple example game is setup by default in the repo. It is entirely contained to main.c
 
 
 ![alt text](assets/image.png)
 
 
 
-# tmp
+# how to build:
 
-$ pacman -S mingw-w64-ucrt-x86_64-openal
+## linux
+
+## windows
+
+
+# todo
+- particle system
+- animations
+- fix memory leak

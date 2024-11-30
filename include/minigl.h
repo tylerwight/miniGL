@@ -65,7 +65,7 @@ void minigl_scene_run_loop(minigl_engine *engine);
 void minigl_scene_draw(minigl_engine *engine, minigl_scene *scene);
 
 minigl_engine *minigl_init(float x, float y, const char * name);
+void minigl_process_movement(minigl_engine *engine);
 void minigl_draw(minigl_engine *engine);
-void minigl_process_movement(minigl_engine *engine, double delta_time);
 
 #endif

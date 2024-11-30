@@ -264,7 +264,7 @@ minigl_engine *minigl_init(float x, float y, const char * name){
 }
 
 
-void minigl_process_movement(minigl_engine *engine, double delta_time){
+void minigl_process_movement(minigl_engine *engine){
     minigl_scene *current_scene = engine->scenes[engine->current_scene];
     if (current_scene == NULL){
         printf("MPM NO CURRENT SCENE\n");
